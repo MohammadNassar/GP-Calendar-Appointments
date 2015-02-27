@@ -27,9 +27,10 @@ public class DatabaseConnection {
     }
     
     // Retrieve records from the database
-    public void getRecords() {
+    public void getRecords(String instruction) {
         
-        String query = "SELECT * FROM Appointments;";
+        //String query = "SELECT * FROM Appointments;";
+        String query = instruction;
         
         try {
             // Execute the SQL statement and save the returned value in variable 'result'.
