@@ -14,20 +14,24 @@ public class DatabaseConnection {
             // Loading mysql driver
             Class.forName("com.mysql.jdbc.Driver");
             
-            // Get/create the connection
+            // Get/create the connection (Connect to the local server ==> phpMyAAdmin)
             connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/sega", "root", "");
+            
+            // Get/create the connection (Connect to the QMUL Server)
+            //connect = DriverManager.getConnection("jdbc:mysql://dbprojects.eecs.qmul.ac.uk:3306/SEGA", "SEGA", "");
+            
             // Create a statement
             statement = connect.createStatement();
             
         } catch (ClassNotFoundException c) {
             System.out.println("Unable to create the connection. ==> ("+c+")");
         } catch (SQLException s) {
-            System.out.println("Unable to create statement. ==> ("+s+")");
+            System.out.println("Unable to get connection or create statement. ==> ("+s+")");
         }
     }
     
     // Retrieve records from the database
-    public void getRecords(String instruction) {
+    public void getAppointments(String instruction) {
         
         //String query = "SELECT * FROM Appointments;";
         String query = instruction;
@@ -53,6 +57,16 @@ public class DatabaseConnection {
                 System.out.println(rowInTable);
             }
             
+        } catch (SQLException s) {
+            System.out.println("Unable to execute query. ==> ("+s+")");
+        }
+    }
+    
+    // Add a record into the database
+    public void addAppointment(String instruction) {
+        
+        try {
+            statement.executeUpdate(instruction);
         } catch (SQLException s) {
             System.out.println("Unable to execute query. ==> ("+s+")");
         }
