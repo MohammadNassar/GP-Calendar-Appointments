@@ -10,15 +10,21 @@ public class DatabaseConnection {
     
     public DatabaseConnection() {
         
+        String loginUser = "SEGA";
+        String loginPassword = "";
+        String databaseName = "SEGA";
+        //String loginUrl = "jdbc:mysql://dbprojects.eecs.qmul.ac.uk:3306/" + databaseName;  // (On Campus)
+        String loginUrl = "jdbc:mysql://localhost:3307/" + databaseName;  // (Off Campus) ==> (requires reverse tunnelling see guide)
+        
         try {
             // Loading mysql driver
             Class.forName("com.mysql.jdbc.Driver");
             
             // Get/create the connection (Connect to the local server ==> phpMyAAdmin)
-            connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/sega", "root", "");
+            connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/SEGA", "root", "");
             
-            // Get/create the connection (Connect to the QMUL Server)
-            //connect = DriverManager.getConnection("jdbc:mysql://dbprojects.eecs.qmul.ac.uk:3306/SEGA", "SEGA", "");
+            // Get/create the connection (Connect to the uni's server - On/Off Campus)
+            //connect = DriverManager.getConnection(loginUrl, loginUser, loginPassword);
             
             // Create a statement
             statement = connect.createStatement();
@@ -37,7 +43,7 @@ public class DatabaseConnection {
         String query = instruction;
         
         try {
-            // Execute the SQL statement and save the returned value in variable 'result'.
+            // Perform the query ==> (Execute the SQL statement and save the returned value in variable 'result').
             result = statement.executeQuery(query);
             
             while (result.next()) {
