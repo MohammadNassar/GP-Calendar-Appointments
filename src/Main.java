@@ -9,11 +9,11 @@ public class Main {
 
     public static void main(String[] args) {
         
-        getRecords();
+        //getRecordsOld();
         //addRecords();
     }
     
-    public static void getRecords() {
+    public static void getRecordsOld() {
         
         DatabaseConnection connect = new DatabaseConnection();
         
@@ -57,7 +57,50 @@ public class Main {
         query += "ORDER BY date, startTime, patientID ";
         query += ";";
         System.out.println(query);
-        connect.getAppointments(query);
+        connect.getAppointmentsOld(query);
+    }
+    
+    public static String[][] getRecords(String[] line) {
+        
+        DatabaseConnection connect = new DatabaseConnection();
+        
+        String query = "SELECT * FROM Appointments ";
+        boolean condition = false; // Initially assume that some properties have been set.
+        //String query = "SELECT appId, appType, patientId, appWithStaffId, date, startTime, finishTime FROM Appointments;";
+        
+        
+        for (int i=0; i<line.length; i++)
+            line[i] = line[i].trim();
+        
+        if (! allUnset(line))
+            condition = true;
+        
+        if (condition) {
+            
+            ArrayList<String> allConditions = new ArrayList<String>();
+            
+            String[] columnNames = {"appId ", "appType ", "patientId ", "appWithStaffId ", "date ", "startTime ", "finishTime "};
+            for (int i=0; i<line.length; i++) {
+                if ( ! line[i].equals("") )
+                    allConditions.add(columnNames[i] + "= '" + line[i] + "' ");
+            }
+            
+            for (int i=0; i<allConditions.size(); i++) {
+                if (i != allConditions.size()-1)
+                    allConditions.set(i, allConditions.get(i) + "AND ");
+            }
+            
+            query += "WHERE ";
+            for (String tmp : allConditions)
+                query += tmp;
+            
+        }
+        
+        query += "ORDER BY date, startTime, patientID ";
+        query += ";";
+        System.out.println(query);
+        String[][] table = connect.getAppointments(query);
+        return table;
     }
     
     public static void addRecords() {
