@@ -22,10 +22,10 @@ public class DatabaseConnection {
             Class.forName("com.mysql.jdbc.Driver");
             
             // Get/create the connection (Connect to the local server ==> phpMyAAdmin)
-            //connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/SEGA", "root", "");
+            connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/SEGA", "root", "");
             
             // Get/create the connection (Connect to the uni's server - On/Off Campus)
-            connect = DriverManager.getConnection(loginUrl, loginUser, loginPassword);
+            //connect = DriverManager.getConnection(loginUrl, loginUser, loginPassword);
             
             // Create a statement
             statement = connect.createStatement();
