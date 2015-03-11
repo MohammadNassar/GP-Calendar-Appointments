@@ -3,6 +3,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.util.ArrayList;
 
 public class GUI extends JFrame {
 
@@ -16,6 +19,7 @@ public class GUI extends JFrame {
 	private JButton enter, reset, cancel;
 	
 	// appFrame items
+        private JFrame appFrame;
 	private JLabel item1, idLabel, typeLabel, patientLabel, staffLabel, dateLabel, startTimeLabel, finishTimeLabel;
 	private JTextField idTextField, typeTextField, patientTextField, staffTextField, dateTextField, startTimeTextField, finishTimeTextField;
 	private JButton button1, searchButton, resetButton, addButton, updateButton, removeButton;
@@ -24,22 +28,30 @@ public class GUI extends JFrame {
 	private JScrollPane appScroll, optionsScroll, mainScroll;
         private JTextArea textArea1, textArea2;
         private String[] arr = {};
-        private String[][] tableData = Main.getRecords(arr);
+        private String[][] tableData = Main.getAppointments(arr);
 	
         // addAppFrame items
-        private JLabel idAddLabel, typeAddLabel, patientAddLabel, staffAddLabel, dateAddLabel, startTimeAddLabel, finishTimeAddLabel;
+        private JFrame addAppFrame;
+        private JLabel idAddLabel, typeAddLabel, patientAddLabel, staffAddLabel, dateAddLabel, startTimeAddLabel, finishTimeAddLabel, appTimeAddLabel;
         private JTextField idAddText, typeAddText, patientAddText, staffAddText, dateAddText, startTimeAddText, finishTimeAddText;
+        private JComboBox timesListAdd;
         private JButton submitAdd, resetAdd, cancelAdd;
+        private String timeSelectedAdd;
         
         // updateAppFrame items
-        private JLabel idUpdateLabel, typeUpdateLabel, patientUpdateLabel, staffUpdateLabel, dateUpdateLabel, startTimeUpdateLabel, finishTimeUpdateLabel;
+        private JFrame updateAppFrame;
+        private JLabel idUpdateLabel, typeUpdateLabel, patientUpdateLabel, staffUpdateLabel, dateUpdateLabel, startTimeUpdateLabel, finishTimeUpdateLabel, appTimeUpdateLabel;
         private JTextField idUpdateText, typeUpdateText, patientUpdateText, staffUpdateText, dateUpdateText, startTimeUpdateText, finishTimeUpdateText;
+        private JComboBox timeListUpdate;
         private JButton submitUpdate, resetUpdate, cancelUpdate;
         
         // removeAppFrame items
-        private JLabel idRemoveLabel, typeRemoveLabel, patientRemoveLabel, staffRemoveLabel, dateRemoveLabel, startTimeRemoveLabel, finishTimeRemoveLabel;
+        private JFrame removeAppFrame;
+        private JLabel idRemoveLabel, typeRemoveLabel, patientRemoveLabel, staffRemoveLabel, dateRemoveLabel, startTimeRemoveLabel, finishTimeRemoveLabel, appTimeRemoveLabel;
         private JTextField idRemoveText, typeRemoveText, patientRemoveText, staffRemoveText, dateRemoveText, startTimeRemoveText, finishTimeRemoveText;
+        private JComboBox timesListRemove;
         private JButton submitRemove, resetRemove, cancelRemove;
+        
         
 	public GUI() {
 		
@@ -101,7 +113,7 @@ public class GUI extends JFrame {
 	private void appFrame() {
 		
 		setVisible(false);
-		JFrame appFrame = new JFrame("Appointments System");
+		appFrame = new JFrame("Appointments System");
 		appFrame.setVisible(true);
 		appFrame.setSize(900, 600);
 		appFrame.setLocation(300, 100);
@@ -235,7 +247,7 @@ public class GUI extends JFrame {
         
         public void addAppFrame() {
             
-            final JFrame addAppFrame = new JFrame("Add an Appointment");
+            addAppFrame = new JFrame("Add an Appointment");
             addAppFrame.setVisible(true);
             addAppFrame.setBounds(400, 200, 350, 400);
             JPanel addAppPanel = new JPanel();
@@ -247,16 +259,21 @@ public class GUI extends JFrame {
             patientAddLabel = new JLabel("Patient");
             staffAddLabel = new JLabel("Staff");
             dateAddLabel = new JLabel("Date");
-            startTimeAddLabel = new JLabel("Start Time");
-            finishTimeAddLabel = new JLabel("Finish Time");
+            //startTimeAddLabel = new JLabel("Start Time");
+            //finishTimeAddLabel = new JLabel("Finish Time");
+            appTimeAddLabel = new JLabel("Choose Time Slot");
+            
             
             //idAddText = new JTextField(15);
             typeAddText = new JTextField(15);
             patientAddText = new JTextField(15);
             staffAddText = new JTextField(15);
             dateAddText = new JTextField(15);
-            startTimeAddText = new JTextField(15);
-            finishTimeAddText = new JTextField(15);
+            //startTimeAddText = new JTextField(15);
+            //finishTimeAddText = new JTextField(15);
+            
+            String[] timeSlotsAvailableArray = new String[0];
+            timesListAdd = new JComboBox(timeSlotsAvailableArray);
             
             submitAdd = new JButton("Submit");
             resetAdd = new JButton("Reset");
@@ -284,13 +301,14 @@ public class GUI extends JFrame {
             c.gridy = 10;
             addAppPanel.add(dateAddText, c);
             c.gridy = 11;
-            addAppPanel.add(startTimeAddLabel, c);
+            //addAppPanel.add(startTimeAddLabel, c);
             c.gridy = 12;
-            addAppPanel.add(startTimeAddText, c);
+            //addAppPanel.add(startTimeAddText, c);
             c.gridy = 13;
-            addAppPanel.add(finishTimeAddLabel, c);
+            //addAppPanel.add(finishTimeAddLabel, c);
             c.gridy = 14;
-            addAppPanel.add(finishTimeAddText, c);
+            //addAppPanel.add(finishTimeAddText, c);
+            addAppPanel.add(timesListAdd, c);
             c.gridy = 15;
             addAppPanel.add(submitAdd, c);
             c.gridy = 16;
@@ -302,6 +320,39 @@ public class GUI extends JFrame {
             addAppFrame.add(addAppScroll);
             
             Listener listen = new Listener();
+            
+            staffAddText.addFocusListener(
+                    new FocusListener(){
+                        public void focusGained(FocusEvent e) {
+                            //System.out.println("focusGained");
+                            
+                        }
+                        public void focusLost(FocusEvent e) {
+                            //System.out.println("focusLost");
+                            timesListAdd.removeAllItems();
+                            String[] options = new String[0];
+                            
+                            if (! staffAddText.getText().equals("")) {
+                                String[] names = Main.getOneColumnFromTable("SELECT name FROM doctorsandnurses ;");
+                                if (Main.strIsInArray(staffAddText.getText(), names))
+                                    options = Main.getTimeSlotsAvailable(staffAddText.getText());
+                            }
+                            
+                            for (String val : options)
+                                timesListAdd.addItem(val);
+                        }
+                    }
+            );
+            
+            timesListAdd.addActionListener(
+                    new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            timeSelectedAdd = (String ) timesListAdd.getSelectedItem();
+                            //JOptionPane.showMessageDialog(null, timeSelectedAdd);
+                        }
+                    }
+            );
+            
             submitAdd.addActionListener(listen);
             resetAdd.addActionListener(listen);
             //cancelAdd.addActionListener(listen);
@@ -316,7 +367,7 @@ public class GUI extends JFrame {
         
         public void updateAppFrame() {
             
-            final JFrame updateAppFrame = new JFrame("Update an Appointment");
+            updateAppFrame = new JFrame("Update an Appointment");
             updateAppFrame.setVisible(true);
             updateAppFrame.setBounds(400, 200, 350, 400);
             JPanel updateAppPanel = new JPanel();
@@ -383,6 +434,7 @@ public class GUI extends JFrame {
             updateAppFrame.add(updateAppScroll);
             
             Listener listen = new Listener();
+            
             submitUpdate.addActionListener(listen);
             resetUpdate.addActionListener(listen);
             //cancelUpdate.addActionListener(listen);
@@ -395,7 +447,7 @@ public class GUI extends JFrame {
         
         public void removeAppFrame() {
             
-            final JFrame removeAppFrame = new JFrame("Remove an Appointment");
+            removeAppFrame = new JFrame("Remove an Appointment");
             removeAppFrame.setVisible(true);
             removeAppFrame.setBounds(400, 200, 350, 400);
             JPanel removeAppPanel = new JPanel();
@@ -462,6 +514,7 @@ public class GUI extends JFrame {
             removeAppFrame.add(removeAppScroll);
             
             Listener listen = new Listener();
+            
             submitRemove.addActionListener(listen);
             resetRemove.addActionListener(listen);
             //cancelRemove.addActionListener(listen);
@@ -544,7 +597,7 @@ public class GUI extends JFrame {
                             values[5] = startTimeTextField.getText();
                             values[6] = finishTimeTextField.getText();
                             //JOptionPane.showMessageDialog(null, textId+textType+textpatient+textStaff+textDate+textStartTime+textFinishTime);
-                            tableData = Main.getRecords(values);
+                            tableData = Main.getAppointments(values);
                             //appTable.revalidate();
                             //tableData.fireTableDataChanged();
                             //appTable.repaint();
@@ -583,13 +636,13 @@ public class GUI extends JFrame {
                         }
                         else if (e.getSource() == resetAdd) {
                             
-                            idAddText.setText("");
+                            //idAddText.setText("");
                             typeAddText.setText("");
                             patientAddText.setText("");
                             staffAddText.setText("");
                             dateAddText.setText("");
-                            startTimeAddText.setText("");
-                            finishTimeAddText.setText("");
+                            //startTimeAddText.setText("");
+                            //finishTimeAddText.setText("");
                         }
                         else if (e.getSource() == cancelAdd) {
                             
@@ -606,8 +659,9 @@ public class GUI extends JFrame {
                             patientUpdateText.setText("");
                             staffUpdateText.setText("");
                             dateUpdateText.setText("");
-                            startTimeUpdateText.setText("");
-                            finishTimeUpdateText.setText("");
+                            //startTimeUpdateText.setText("");
+                            //finishTimeUpdateText.setText("");
+                            //timesListAdd.removeAllItems();
                         }
                         else if (e.getSource() == cancelUpdate) {
                             
@@ -624,8 +678,8 @@ public class GUI extends JFrame {
                             patientRemoveText.setText("");
                             staffRemoveText.setText("");
                             dateRemoveText.setText("");
-                            startTimeRemoveText.setText("");
-                            finishTimeRemoveText.setText("");
+                            //startTimeRemoveText.setText("");
+                            //finishTimeRemoveText.setText("");
                         }
                         else if (e.getSource() == cancelRemove) {
                             

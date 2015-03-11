@@ -12,7 +12,7 @@ public class DatabaseConnection {
     public DatabaseConnection() {
         
         String loginUser = "SEGA";
-        String loginPassword = "";
+        String loginPassword = "z4k6al6w";
         String databaseName = "SEGA";
         String loginUrl = "jdbc:mysql://dbprojects.eecs.qmul.ac.uk:3306/" + databaseName;  // (On Campus)
         //String loginUrl = "jdbc:mysql://localhost:3307/" + databaseName;  // (Off Campus) ==> (requires reverse tunnelling see guide)
@@ -38,7 +38,7 @@ public class DatabaseConnection {
     }
     
     // Retrieve records from the database
-    public String[][] getAppointments(String instruction) {
+    public String[][] getRecords(String instruction) {
         
         //String query = "SELECT * FROM Appointments;";
         String query = instruction;
@@ -88,8 +88,110 @@ public class DatabaseConnection {
         return rowsInTable;
     }
     
+    // Retrieve ANY records from the database
+    public String[] getOneColumnFromTable(String instruction) {
+        
+        String[] commands = instruction.split(" ");
+        String columnName = commands[1];
+        
+        String query = instruction;
+        String[] rowsInTable = new String[0];
+        
+        try {
+            // Perform the query ==> (Execute the SQL statement and save the returned value in variable 'result').
+            result = statement.executeQuery(query);
+            
+            ArrayList<String> list = new ArrayList<String>();
+            int index = 0;
+            while (result.next()) {
+                
+                // Concatenate results retrieved from table and print them.
+                String day = result.getString(columnName);
+                
+                list.add(day);
+                index++;
+            }
+            
+            if (list.size() > 0) {
+                rowsInTable = new String[list.size()];
+                for (int i=0; i<list.size(); i++) {
+                    rowsInTable[i] = list.get(i);
+                }
+            }
+            
+        } catch (SQLException s) {
+            System.out.println("Unable to execute query. ==> ("+s+")");
+        }
+        
+        return rowsInTable;
+    }
+    
     // Retrieve records from the database
-    public void getAppointmentsOld(String instruction) {
+    public String[] getTimesFromDoctorsandnurses(String name) {
+        
+        String query = "SELECT " +
+        "a9,b9,c9,d9,a10,b10,c10,d10,a11,b11,c11,d11,a12,b12,c12,d12,a13,b13,c13,d13,a14,b14,c14,d14,a15,b15,c15,d15,a16,b16,c16,d16,a17,b17 " +
+        "FROM " +
+        "doctorsandnurses WHERE name LIKE '" + name + "' ;";
+        
+        System.out.println(query);
+        
+        String[] availabilityRow = new String[34];
+        String[] atColumns = {"a9","b9","c9","d9","a10","b10","c10","d10","a11","b11","c11","d11","a12","b12","c12","d12",
+                             "a13","b13","c13","d13","a14","b14","c14","d14","a15","b15","c15","d15","a16","b16","c16","d16","a17","b17"};
+        
+        try {
+            // Perform the query ==> (Execute the SQL statement and save the returned value in variable 'result').
+            result = statement.executeQuery(query);
+        
+            if (result.next()) {
+                
+                // Add results retrieved from table to an array.
+                for (int i=0; i<atColumns.length; i++) {
+                    availabilityRow[i] = result.getString(atColumns[i]);
+                }
+            }
+        } catch (SQLException s) {
+            System.out.println("Unable to execute query. ==> ("+s+")");
+        }
+        
+        return availabilityRow;
+    }
+    
+    // Retrieve records from the database
+    public String[] getNamesFromDoctorsandnurses(String name) {
+        
+        String query = "SELECT " +
+        "a9,b9,c9,d9,a10,b10,c10,d10,a11,b11,c11,d11,a12,b12,c12,d12,a13,b13,c13,d13,a14,b14,c14,d14,a15,b15,c15,d15,a16,b16,c16,d16,a17,b17 " +
+        "FROM " +
+        "doctorsandnurses WHERE name LIKE '" + name + "' ;";
+        
+        System.out.println(query);
+        
+        String[] availabilityRow = new String[34];
+        String[] atColumns = {"a9","b9","c9","d9","a10","b10","c10","d10","a11","b11","c11","d11","a12","b12","c12","d12",
+                             "a13","b13","c13","d13","a14","b14","c14","d14","a15","b15","c15","d15","a16","b16","c16","d16","a17","b17"};
+        
+        try {
+            // Perform the query ==> (Execute the SQL statement and save the returned value in variable 'result').
+            result = statement.executeQuery(query);
+        
+            if (result.next()) {
+                
+                // Add results retrieved from table to an array.
+                for (int i=0; i<atColumns.length; i++) {
+                    availabilityRow[i] = result.getString(atColumns[i]);
+                }
+            }
+        } catch (SQLException s) {
+            System.out.println("Unable to execute query. ==> ("+s+")");
+        }
+        
+        return availabilityRow;
+    }
+    
+    // Retrieve records from the database
+    public void getRecordsNoGUI(String instruction) {
         
         //String query = "SELECT * FROM Appointments;";
         String query = instruction;
@@ -121,7 +223,7 @@ public class DatabaseConnection {
     }
     
     // Add a record into the database
-    public void addAppointment(String instruction) {
+    public void addRecords(String instruction) {
         
         try {
             statement.executeUpdate(instruction);
