@@ -1,8 +1,11 @@
+package CalendarAppointments;
+
 // 'Calendar Appointments' module - By Mohammad Nassar - ID No. 120132108
 // Version 3 - Adding a record/row to the database based on user request made by his input
 // Appropriate input for method: 'getRecords' is:  ,Routine,,,13/01/2014,,  or  ,Routine,,,,,  or (to view all appointments) 	,,,,,,
 // Appropriate input for method: 'addAppointment' is:  'routine', 30, 50, '01/01/1000', '12:34', '23:45'
 
+//import CalendarAppointments.DatabaseConnection;
 import java.util.*;
 import java.text.*;
 
@@ -12,9 +15,12 @@ public class Main {
         
         //getAppointmentsNoGUI();
         //addAppointment();
-        gpIsOpenOn("2014-02-12");
+        //gpIsOpenOn("2014-02-12");
         //getDayOfWeek("2014-01-12");
         //String[] timesAvailable = getTimeSlotsAvailable("mohammad"); for(String val : timesAvailable)System.out.println(val);
+        //getCurrentDate();
+        //System.out.println(dateIsInThePast("2014-02-13"));
+        //removeTokens("2014-0/2: 13");
     }
     
     public static String[][] getAppointments(String[] line) {
@@ -111,7 +117,7 @@ public class Main {
         
         DatabaseConnection connect = new DatabaseConnection();
         
-        String[] dates = connect.getOneColumnFromTable("SELECT * FROM `GpDaysOff`;");
+        String[] dates = connect.getOneColumnFromTable("SELECT day FROM `GpDaysOff`;");
         
         boolean docOrNurseAvailable = true;
         //for (String eachDate : dates){System.out.println(eachDate);}
@@ -122,7 +128,10 @@ public class Main {
                 return false;
         }
         // Checking if the date (entered by user) is not on a 'Sunday'.
-        if (getDayOfWeek("2014-02-12") == 1)
+        if (getDayOfWeek(date) == 1)
+            return false;
+        // Checking whether the date is in the future or in the past
+        if (dateIsInThePast(date))
             return false;
         //System.out.println(true);
         return true;
@@ -180,7 +189,7 @@ public class Main {
     
     public static Date stringToDate(String strDate) {
         
-        DateFormat dateFormat = new SimpleDateFormat("yyy-mm-dd");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date date = null;
         try {
             date = dateFormat.parse(strDate);
@@ -189,6 +198,53 @@ public class Main {
         }
         
         return date;
+    }
+    
+    public static String getCurrentDate() {
+        
+        String[] dateFormats = {"yyyy-MM-dd", "HH:mm", "HH:mm:ss", "yyyy-MM-dd HH:mm:ss"};
+        DateFormat dateFormat = new SimpleDateFormat(dateFormats[0]);
+        Date date = new Date();
+        String dateAsStr = dateFormat.format(date);
+        // Or Also
+        /*Calendar calendar = Calendar.getInstance();
+        String dateAsStr = dateFormat.format(calendar.getTime());*/
+        //System.out.println(dateAsStr);
+        return dateAsStr;
+    }
+    
+    public static boolean dateIsInThePast(String dateStr) {
+        
+        dateStr = removeTokens(dateStr);
+        //System.out.println(dateStr);
+        
+        int dateToCheck = Integer.parseInt(dateStr);
+        int dateNow = Integer.parseInt(removeTokens(getCurrentDate()));
+        
+        int difference = dateToCheck - dateNow;
+        if (difference < 0)
+            return true;
+        return false;
+    }
+    
+    public static boolean dateTimeAreInThePast(String dateTimeStr) {
+        
+        String newDateTimeStr = "";
+        for (int i=0; i<dateTimeStr.length(); i++) {
+            if (dateTimeStr.charAt(i) != '-' && dateTimeStr.charAt(i) != '/' && dateTimeStr.charAt(i) != ' ' && dateTimeStr.charAt(i) != ':')
+                newDateTimeStr += dateTimeStr.charAt(i);
+        }//System.out.println(newDateTimeStr);
+        return true;
+    }
+    
+    public static String removeTokens(String str) {
+        
+        String newStr = "";
+        for (int i=0; i<str.length(); i++) {
+            if (str.charAt(i) != '-' && str.charAt(i) != '/' && str.charAt(i) != ' ' && str.charAt(i) != ':')
+                newStr += str.charAt(i);
+        }//System.out.println(newStr);
+        return newStr;
     }
     
     public static void getAppointmentsNoGUI() {

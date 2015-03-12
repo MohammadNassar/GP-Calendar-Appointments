@@ -1,3 +1,5 @@
+package CalendarAppointments;
+
 // 'Calendar Appointments' module - By Mohammad Nassar - ID No. 120132108
 
 import java.sql.*;

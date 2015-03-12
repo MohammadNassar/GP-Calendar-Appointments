@@ -1,3 +1,5 @@
+package CalendarAppointments;
+
 import java.util.Arrays;
 import javax.swing.*;
 import java.awt.*;
@@ -6,9 +8,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.ArrayList;
+import javax.swing.table.AbstractTableModel;
 
 public class GUI extends JFrame {
-
+    
 	// setResizable(false);
 	// loginFrame items
 	private JLabel logoHolder, userLabel, passLabel;
@@ -24,6 +27,7 @@ public class GUI extends JFrame {
 	private JTextField idTextField, typeTextField, patientTextField, staffTextField, dateTextField, startTimeTextField, finishTimeTextField;
 	private JButton button1, searchButton, resetButton, addButton, updateButton, removeButton;
 	private JPanel appPanel, optionsPanel, menuPanel, mainPanel;
+        private TableModel tableModel;
 	private JTable appTable;
 	private JScrollPane appScroll, optionsScroll, mainScroll;
         private JTextArea textArea1, textArea2;
@@ -138,26 +142,11 @@ public class GUI extends JFrame {
 		/*String[][] tableData = {
 						{"13 ", "Routine", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
 						{"2", "Routine", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"1", "Care Management", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"4", "Care Management", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"5", "Routine", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"3", "Routine", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"6", "Routine", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"7", "Care Management", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"8", "Routine", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"9", "Care Management", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"10", "Care Management", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"11", "Care Management", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"12", "Routine", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"14", "Routine", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"15", "Care Management", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"16", "Routine", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"17", "Care Management", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"18", "Care Management", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"19", "Routine", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "},
-						{"20", "Routine", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "}
+						{"1", "Care Management", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "}
 					};*/
-		appTable = new JTable(tableData, columnNames);
+                tableModel = new TableModel();
+		appTable = new JTable(tableModel);
+                //appTable = new JTable(tableModel.getTableData(), tableModel.getColumnsNames());
 		// To set the preferred view port size, which may require me to add a scroll bar in order to see the entire table.
 		//appTable.setPreferredScrollableViewportSize(new Dimension(400, 100));
 		// To make the table adjust height to fit with window, in order to avoid scrolling.
@@ -229,6 +218,7 @@ public class GUI extends JFrame {
                 
 		//appFrame.add(appPanel);
 		appScroll = new JScrollPane(appPanel);
+                appTable.setFillsViewportHeight(true);
 		// Horizontal spacing //c.weightx = 1.0;
 		// Vertical spacing //c.weighty = 1.0;
 		mainPanel.add(optionsPanel);
@@ -597,15 +587,9 @@ public class GUI extends JFrame {
                             values[5] = startTimeTextField.getText();
                             values[6] = finishTimeTextField.getText();
                             //JOptionPane.showMessageDialog(null, textId+textType+textpatient+textStaff+textDate+textStartTime+textFinishTime);
-                            tableData = Main.getAppointments(values);
-                            //appTable.revalidate();
-                            //tableData.fireTableDataChanged();
-                            //appTable.repaint();
-                            //appPanel.setVisible(false);
-                            //appPanel.setVisible(true);
-                            /*String[] res = Main.getRecords2(values);
-                            for (String tmp : res)
-                                JOptionPane.showMessageDialog(null, res);*/
+                            //tableData = Main.getAppointments(values);
+                            tableModel.setFilter(values);
+                            tableModel.fireTableDataChanged();
                         }
                         else if (e.getSource() == resetButton) {
                             
@@ -616,6 +600,9 @@ public class GUI extends JFrame {
                             dateTextField.setText("");
                             startTimeTextField.setText("");
                             finishTimeTextField.setText("");
+                            String[] values = {};
+                            tableModel.setFilter(values);
+                            tableModel.fireTableDataChanged();
                         }
                         else if (e.getSource() == addButton) {
                             
