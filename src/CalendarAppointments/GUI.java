@@ -7,6 +7,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import javax.swing.table.AbstractTableModel;
 
@@ -38,8 +40,8 @@ public class GUI extends JFrame {
         private JFrame addAppFrame;
         private JLabel idAddLabel, typeAddLabel, patientAddLabel, staffAddLabel, dateAddLabel, startTimeAddLabel, finishTimeAddLabel, appTimeAddLabel;
         private JTextField idAddText, typeAddText, patientAddText, staffAddText, dateAddText, startTimeAddText, finishTimeAddText;
-        private JComboBox timesListAdd;
-        private JButton submitAdd, resetAdd, cancelAdd;
+        private JComboBox staffListAdd, timesListAdd;
+        private JButton checkDateButton, submitAdd, resetAdd, cancelAdd;
         private String timeSelectedAdd;
         
         // updateAppFrame items
@@ -247,8 +249,8 @@ public class GUI extends JFrame {
             //idAddLabel  = new JLabel("ID");
             typeAddLabel = new JLabel("Type");
             patientAddLabel = new JLabel("Patient");
-            staffAddLabel = new JLabel("Staff");
             dateAddLabel = new JLabel("Date");
+            staffAddLabel = new JLabel("Staff");
             //startTimeAddLabel = new JLabel("Start Time");
             //finishTimeAddLabel = new JLabel("Finish Time");
             appTimeAddLabel = new JLabel("Choose Time Slot");
@@ -257,14 +259,21 @@ public class GUI extends JFrame {
             //idAddText = new JTextField(15);
             typeAddText = new JTextField(15);
             patientAddText = new JTextField(15);
-            staffAddText = new JTextField(15);
+            //staffAddText = new JTextField(15);
             dateAddText = new JTextField(15);
             //startTimeAddText = new JTextField(15);
             //finishTimeAddText = new JTextField(15);
             
-            String[] timeSlotsAvailableArray = new String[0];
-            timesListAdd = new JComboBox(timeSlotsAvailableArray);
+            String[] arr = {"Add & Check Date First"};
+            staffListAdd = new JComboBox(arr);
+            staffListAdd.setEnabled(false);
             
+            String[] timeSlotsAvailableArray = {"Add & Check Date First"};
+            timesListAdd = new JComboBox(timeSlotsAvailableArray);
+            timesListAdd.setEnabled(false);
+            
+            // By adding this button (which does not really have an action) I invoke the user to make the focus lost from the date text field.
+            checkDateButton = new JButton("Check Date");
             submitAdd = new JButton("Submit");
             resetAdd = new JButton("Reset");
             cancelAdd = new JButton("Cancel");
@@ -282,10 +291,8 @@ public class GUI extends JFrame {
             addAppPanel.add(patientAddLabel, c);
             c.gridy = 6;
             addAppPanel.add(patientAddText, c);
-            c.gridy = 7;
-            addAppPanel.add(staffAddLabel, c);
             c.gridy = 8;
-            addAppPanel.add(staffAddText, c);
+            //addAppPanel.add(staffAddText, c);
             c.gridy = 9;
             addAppPanel.add(dateAddLabel, c);
             c.gridy = 10;
@@ -298,12 +305,21 @@ public class GUI extends JFrame {
             //addAppPanel.add(finishTimeAddLabel, c);
             c.gridy = 14;
             //addAppPanel.add(finishTimeAddText, c);
-            addAppPanel.add(timesListAdd, c);
             c.gridy = 15;
-            addAppPanel.add(submitAdd, c);
+            addAppPanel.add(checkDateButton, c);
             c.gridy = 16;
-            addAppPanel.add(resetAdd, c);
+            addAppPanel.add(staffAddLabel, c);
             c.gridy = 17;
+            addAppPanel.add(staffListAdd, c);
+            c.gridy = 18;
+            addAppPanel.add(appTimeAddLabel, c);
+            c.gridy = 19;
+            addAppPanel.add(timesListAdd, c);
+            c.gridy = 20;
+            addAppPanel.add(submitAdd, c);
+            c.gridy = 21;
+            addAppPanel.add(resetAdd, c);
+            c.gridy = 22;
             addAppPanel.add(cancelAdd, c);
             
             JScrollPane addAppScroll = new JScrollPane(addAppPanel);
@@ -311,28 +327,32 @@ public class GUI extends JFrame {
             
             Listener listen = new Listener();
             
-            staffAddText.addFocusListener(
+            dateAddText.addFocusListener(
                     new FocusListener(){
                         public void focusGained(FocusEvent e) {
                             //System.out.println("focusGained");
                             
                         }
                         public void focusLost(FocusEvent e) {
-                            //System.out.println("focusLost");
-                            timesListAdd.removeAllItems();
-                            String[] options = new String[0];
-                            
-                            if (! staffAddText.getText().equals("")) {
-                                String[] names = Main.getOneColumnFromTable("SELECT name FROM doctorsandnurses ;");
-                                if (Main.strIsInArray(staffAddText.getText(), names))
-                                    options = Main.getTimeSlotsAvailable(staffAddText.getText());
-                            }
-                            
-                            for (String val : options)
-                                timesListAdd.addItem(val);
+                            //updateListOfStaff();
+                            // I had to comment out the line above, as it used to re-change my chosen staff name (from the list) after and re-(gain & lose focus) from the date text field.
                         }
                     }
             );
+            
+            staffListAdd.addFocusListener(
+                    new FocusListener(){
+                        public void focusGained(FocusEvent e) {
+                            //System.out.println("focusGained");
+                            
+                        }
+                        public void focusLost(FocusEvent e) {
+                            //updateListOfTimes();
+                        }
+                    }
+            );
+            
+            staffListAdd.addItemListener(listen);
             
             timesListAdd.addActionListener(
                     new ActionListener() {
@@ -343,6 +363,7 @@ public class GUI extends JFrame {
                     }
             );
             
+            checkDateButton.addActionListener(listen);
             submitAdd.addActionListener(listen);
             resetAdd.addActionListener(listen);
             //cancelAdd.addActionListener(listen);
@@ -515,7 +536,47 @@ public class GUI extends JFrame {
             });
         }
 	
-	private class Listener implements ActionListener {
+        public void updateListOfStaff() {
+            
+            //System.out.println("focusLost");
+            staffListAdd.removeAllItems();
+            String[] staffOptions = new String[0];
+
+            if (! dateAddText.getText().equals("")) {
+                staffOptions = Main.getOneColumnFromTable("SELECT name FROM doctorsandnurses ;");
+                staffListAdd.setEnabled(true);
+                
+                for (String val : staffOptions)
+                    staffListAdd.addItem(val);
+            }
+            else {
+                String[] options = {"Add & Check Date First"};
+                staffListAdd.addItem(options[0]);
+                staffListAdd.setEnabled(false);
+            }
+        }
+        
+        public void updateListOfTimes() {
+            
+            //System.out.println("focusLost");
+            timesListAdd.removeAllItems();
+            String[] timesOptions = new String[0];
+            
+            if (! dateAddText.getText().equals("")) {
+                timesOptions = Main.getTimeSlotsAvailable((String)staffListAdd.getSelectedItem());
+                timesListAdd.setEnabled(true);
+                
+                for (String val : timesOptions)
+                    timesListAdd.addItem(val);
+            }
+            else {
+                String[] options = {"Add & Check Date First"};
+                timesListAdd.addItem(options[0]);
+                timesListAdd.setEnabled(false);
+            }
+        }
+        
+	private class Listener implements ActionListener, ItemListener {
 		
 		public void actionPerformed(ActionEvent e) {
 			
@@ -618,7 +679,11 @@ public class GUI extends JFrame {
                         }
                         
                         // addAppFrame actions listener
-                        if (e.getSource() == submitAdd) {
+                        if (e.getSource() == checkDateButton) {
+                            updateListOfStaff();
+                            updateListOfTimes();
+                        }
+                        else if (e.getSource() == submitAdd) {
                             
                         }
                         else if (e.getSource() == resetAdd) {
@@ -626,10 +691,12 @@ public class GUI extends JFrame {
                             //idAddText.setText("");
                             typeAddText.setText("");
                             patientAddText.setText("");
-                            staffAddText.setText("");
+                            //staffAddText.setText("");
                             dateAddText.setText("");
                             //startTimeAddText.setText("");
                             //finishTimeAddText.setText("");
+                            updateListOfStaff();
+                            updateListOfTimes();
                         }
                         else if (e.getSource() == cancelAdd) {
                             
@@ -673,6 +740,15 @@ public class GUI extends JFrame {
                             
                         }
 		}
+                
+                public void itemStateChanged(ItemEvent e) {
+                    
+                    if (e.getStateChange() == ItemEvent.SELECTED) {
+                        //JOptionPane.showMessageDialog(null, "Selected Here");
+                        updateListOfTimes();
+                    }
+                    //if (e.getStateChange() == ItemEvent.DESELECTED) {}
+                }
 	}
 	
 	public static void main(String[] args) {
