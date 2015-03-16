@@ -4,7 +4,7 @@ import javax.swing.table.AbstractTableModel;
 
 public class TableModel extends AbstractTableModel {
     
-    private Object[] columnNames = {"appId ", "appType ", "patientId ", "appWithStaffId ", "date ", "startTime ", "finishTime "};
+    private String[] columnNames = {"App.ID", "Type", "Patient ID", "Satff ID", "Date", "Start Time", "Finish Time"};
     private String[] filter = {"", "", "", "", "", "", ""};
     private Object[][] tableData;
     
@@ -20,9 +20,14 @@ public class TableModel extends AbstractTableModel {
         tableData = Main.getAppointments(filter);
     }
     
-    public Object[] getColumnsNames() {
+    public String[] getColumnsNames() {
         
         return columnNames;
+    }
+    
+    public String getColumnName(int column) {
+        
+        return columnNames[column].toString();
     }
     
     public Object[][] getTableData() {
@@ -43,5 +48,10 @@ public class TableModel extends AbstractTableModel {
     public Object getValueAt(int row, int column) {
         
         return tableData[row][column];
+    }
+    
+    public Class getColumnClass(int c) {
+        
+        return getValueAt(0, c).getClass();
     }
 }

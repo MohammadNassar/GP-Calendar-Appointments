@@ -14,20 +14,21 @@ public class DatabaseConnection {
     public DatabaseConnection() {
         
         String loginUser = "SEGA";
-        String loginPassword = "z4k6al6w";
+        String loginPassword = "";
         String databaseName = "SEGA";
-        String loginUrl = "jdbc:mysql://dbprojects.eecs.qmul.ac.uk:3306/" + databaseName;  // (On Campus)
-        //String loginUrl = "jdbc:mysql://localhost:3307/" + databaseName;  // (Off Campus) ==> (requires reverse tunnelling see guide)
+        //String loginUrl = "jdbc:mysql://dbprojects.eecs.qmul.ac.uk:3306/" + databaseName;  // (On Campus)
+        String loginUrl = "jdbc:mysql://localhost:3307/" + databaseName;  // (Off Campus) ==> (requires reverse tunnelling see guide) ==> TUNNELING
+        // For tunnelling enter this into the 'mobaXterm' program ==> ssh -N -L 3307:dbprojects.eecs.qmul.ac.uk:3306 mn302@bert.eecs.qmul.ac.uk
         
         try {
             // Loading mysql driver
             Class.forName("com.mysql.jdbc.Driver");
             
             // Get/create the connection (Connect to the local server ==> phpMyAAdmin)
-            connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/SEGA", "root", "");
+            //connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/SEGA", "root", "");
             
             // Get/create the connection (Connect to the uni's server - On/Off Campus)
-            //connect = DriverManager.getConnection(loginUrl, loginUser, loginPassword);
+            connect = DriverManager.getConnection(loginUrl, loginUser, loginPassword);
             
             // Create a statement
             statement = connect.createStatement();
@@ -42,7 +43,7 @@ public class DatabaseConnection {
     // Retrieve records from the database
     public String[][] getRecords(String instruction) {
         
-        //String query = "SELECT * FROM Appointments;";
+        //String query = "SELECT * FROM appointments;";
         String query = instruction;
         String[][] rowsInTable = {{"", "", "", "", "", "", ""}};
         
@@ -129,12 +130,12 @@ public class DatabaseConnection {
     }
     
     // Retrieve records from the database
-    public String[] getTimesFromDoctorsandnurses(String name) {
+    public String[] getTimesFromDoctorsandnurses(String name, String date) {
         
         String query = "SELECT " +
         "a9,b9,c9,d9,a10,b10,c10,d10,a11,b11,c11,d11,a12,b12,c12,d12,a13,b13,c13,d13,a14,b14,c14,d14,a15,b15,c15,d15,a16,b16,c16,d16,a17,b17 " +
         "FROM " +
-        "doctorsandnurses WHERE name LIKE '" + name + "' ;";
+        "doctorsandnurses WHERE name LIKE '" + name + "' AND date LIKE '" + date + "' ;";
         
         System.out.println(query);
         
@@ -192,10 +193,23 @@ public class DatabaseConnection {
         return availabilityRow;
     }
     
+    public boolean recordExists(String instruction) {
+        boolean exists = false;
+        try {
+            // Perform the query ==> (Execute the SQL statement and save the returned value in variable 'result').
+            result = statement.executeQuery(instruction);
+            if (result.next())
+                exists = true;
+        } catch (SQLException s) {
+            System.out.println("Unable to execute query. ==> ("+s+")");
+        }
+        return exists;
+    }
+    
     // Retrieve records from the database
     public void getRecordsNoGUI(String instruction) {
         
-        //String query = "SELECT * FROM Appointments;";
+        //String query = "SELECT * FROM appointments;";
         String query = instruction;
         
         try {
@@ -233,4 +247,14 @@ public class DatabaseConnection {
             System.out.println("Unable to execute query. ==> ("+s+")");
         }
     }
+    
+    public void execute(String instruction) {
+        
+        try {
+            statement.executeUpdate(instruction);
+        } catch (SQLException s) {
+            System.out.println("Unable to get connection or create statement. ==> ("+s+")");
+        }
+    }
+    
 }
