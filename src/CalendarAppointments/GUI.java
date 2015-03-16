@@ -33,12 +33,15 @@ public class GUI extends JFrame {
 	private JTable appTable;
 	private JScrollPane appScroll, optionsScroll, mainScroll;
         private JTextArea textArea1, textArea2;
+        private String dateLookedAt, typeChosenAdd = "";
         private String[] arr = {};
         private String[][] tableData = Main.getAppointments(arr);
 	
         // addAppFrame items
         private JFrame addAppFrame;
         private JLabel idAddLabel, typeAddLabel, patientAddLabel, staffAddLabel, dateAddLabel, startTimeAddLabel, finishTimeAddLabel, appTimeAddLabel;
+        private JRadioButton routineTypeAdd, careManagementTypeAdd;
+        private ButtonGroup radioGroupAdd;
         private JTextField idAddText, typeAddText, patientAddText, staffAddText, dateAddText, startTimeAddText, finishTimeAddText;
         private JComboBox staffListAdd, timesListAdd;
         private JButton checkDateButton, submitAdd, resetAdd, cancelAdd;
@@ -47,13 +50,17 @@ public class GUI extends JFrame {
         // updateAppFrame items
         private JFrame updateAppFrame;
         private JLabel idUpdateLabel, typeUpdateLabel, patientUpdateLabel, staffUpdateLabel, dateUpdateLabel, startTimeUpdateLabel, finishTimeUpdateLabel, appTimeUpdateLabel;
+        private JRadioButton routineTypeUpdate, careManagementTypeUpdate;
+        private ButtonGroup radioGroupUpdate;
         private JTextField idUpdateText, typeUpdateText, patientUpdateText, staffUpdateText, dateUpdateText, startTimeUpdateText, finishTimeUpdateText;
-        private JComboBox timeListUpdate;
+        private JComboBox timesListUpdate;
         private JButton submitUpdate, resetUpdate, cancelUpdate;
         
         // removeAppFrame items
         private JFrame removeAppFrame;
         private JLabel idRemoveLabel, typeRemoveLabel, patientRemoveLabel, staffRemoveLabel, dateRemoveLabel, startTimeRemoveLabel, finishTimeRemoveLabel, appTimeRemoveLabel;
+        private JRadioButton routineTypeRemove, careManagementTypeRemove;
+        private ButtonGroup radioGroupRemove;
         private JTextField idRemoveText, typeRemoveText, patientRemoveText, staffRemoveText, dateRemoveText, startTimeRemoveText, finishTimeRemoveText;
         private JComboBox timesListRemove;
         private JButton submitRemove, resetRemove, cancelRemove;
@@ -147,13 +154,18 @@ public class GUI extends JFrame {
 						{"1", "Care Management", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "}
 					};*/
                 tableModel = new TableModel();
-		appTable = new JTable(tableModel);
+		//appTable = new JTable(tableModel);
+                appTable = new JTable(tableModel);
+                appTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                appTable.setPreferredScrollableViewportSize(new Dimension(500, 500));
+                //appTable.setFillsViewportHeight(true);
                 //appTable = new JTable(tableModel.getTableData(), tableModel.getColumnsNames());
 		// To set the preferred view port size, which may require me to add a scroll bar in order to see the entire table.
 		//appTable.setPreferredScrollableViewportSize(new Dimension(400, 100));
 		// To make the table adjust height to fit with window, in order to avoid scrolling.
 		//appTable.setFillsViewportHeight(true);
-		appPanel.add(appTable);
+                //Below is what caused my table to not have headers and float in the centre vertically, as I should add the JTable object in a JScrollPane object; not a JPanel object.
+		//appPanel.add(appTable);
 		
 		optionsPanel = new JPanel(new GridBagLayout());
 		idLabel = new JLabel("ID");
@@ -164,7 +176,7 @@ public class GUI extends JFrame {
 		patientTextField = new JTextField(15);
 		staffLabel = new JLabel("Staff ID");
 		staffTextField = new JTextField(15);
-		dateLabel = new JLabel("Date ID");
+		dateLabel = new JLabel("Date");
 		dateTextField = new JTextField(15);
 		startTimeLabel = new JLabel("Start Time");
 		startTimeTextField = new JTextField(15);
@@ -219,7 +231,7 @@ public class GUI extends JFrame {
                 //mainPanel.add(textArea1);
                 
 		//appFrame.add(appPanel);
-		appScroll = new JScrollPane(appPanel);
+		appScroll = new JScrollPane(appTable);
                 appTable.setFillsViewportHeight(true);
 		// Horizontal spacing //c.weightx = 1.0;
 		// Vertical spacing //c.weighty = 1.0;
@@ -257,7 +269,13 @@ public class GUI extends JFrame {
             
             
             //idAddText = new JTextField(15);
-            typeAddText = new JTextField(15);
+            //typeAddText = new JTextField(15);
+            routineTypeAdd = new JRadioButton("Routine", false);
+            careManagementTypeAdd = new JRadioButton("Care Management", false);
+                radioGroupAdd = new ButtonGroup();
+                radioGroupAdd.add(routineTypeAdd);
+                radioGroupAdd.add(careManagementTypeAdd);
+                
             patientAddText = new JTextField(15);
             //staffAddText = new JTextField(15);
             dateAddText = new JTextField(15);
@@ -271,6 +289,9 @@ public class GUI extends JFrame {
             String[] timeSlotsAvailableArray = {"Add & Check Date First"};
             timesListAdd = new JComboBox(timeSlotsAvailableArray);
             timesListAdd.setEnabled(false);
+            
+            dateLookedAt = "";
+            typeChosenAdd = "";
             
             // By adding this button (which does not really have an action) I invoke the user to make the focus lost from the date text field.
             checkDateButton = new JButton("Check Date");
@@ -286,10 +307,13 @@ public class GUI extends JFrame {
             c.gridy = 3;
             addAppPanel.add(typeAddLabel, c);
             c.gridy = 4;
-            addAppPanel.add(typeAddText, c);
-            c.gridy = 5;
+            //addAppPanel.add(typeAddText, c);
+            addAppPanel.add(routineTypeAdd, c);
+            c.gridy = 5; //c.gridx = 1;
+            addAppPanel.add(careManagementTypeAdd, c);
+            c.gridy = 6; //c.gridx = 0;
             addAppPanel.add(patientAddLabel, c);
-            c.gridy = 6;
+            c.gridy = 7;
             addAppPanel.add(patientAddText, c);
             c.gridy = 8;
             //addAppPanel.add(staffAddText, c);
@@ -327,7 +351,7 @@ public class GUI extends JFrame {
             
             Listener listen = new Listener();
             
-            dateAddText.addFocusListener(
+            /*dateAddText.addFocusListener(
                     new FocusListener(){
                         public void focusGained(FocusEvent e) {
                             //System.out.println("focusGained");
@@ -338,9 +362,9 @@ public class GUI extends JFrame {
                             // I had to comment out the line above, as it used to re-change my chosen staff name (from the list) after and re-(gain & lose focus) from the date text field.
                         }
                     }
-            );
+            );*/
             
-            staffListAdd.addFocusListener(
+            /*staffListAdd.addFocusListener(
                     new FocusListener(){
                         public void focusGained(FocusEvent e) {
                             //System.out.println("focusGained");
@@ -350,18 +374,20 @@ public class GUI extends JFrame {
                             //updateListOfTimes();
                         }
                     }
-            );
+            );*/
             
+            routineTypeAdd.addItemListener(listen);
+            careManagementTypeAdd.addItemListener(listen);
             staffListAdd.addItemListener(listen);
             
-            timesListAdd.addActionListener(
+            /*timesListAdd.addActionListener(
                     new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             timeSelectedAdd = (String ) timesListAdd.getSelectedItem();
                             //JOptionPane.showMessageDialog(null, timeSelectedAdd);
                         }
                     }
-            );
+            );*/
             
             checkDateButton.addActionListener(listen);
             submitAdd.addActionListener(listen);
@@ -543,7 +569,9 @@ public class GUI extends JFrame {
             String[] staffOptions = new String[0];
 
             if (! dateAddText.getText().equals("")) {
+                //staffOptions = Main.getOneColumnFromTable("SELECT name FROM doctorsandnurses WHERE date LIKE '" + dateLookedAt + "' ;");
                 staffOptions = Main.getOneColumnFromTable("SELECT name FROM doctorsandnurses ;");
+                staffOptions = Main.removeRepeated(staffOptions);
                 staffListAdd.setEnabled(true);
                 
                 for (String val : staffOptions)
@@ -563,7 +591,10 @@ public class GUI extends JFrame {
             String[] timesOptions = new String[0];
             
             if (! dateAddText.getText().equals("")) {
-                timesOptions = Main.getTimeSlotsAvailable((String)staffListAdd.getSelectedItem());
+                if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name LIKE '"+staffListAdd.getSelectedItem()+"' ;"))
+                    timesOptions = Main.getTimeSlotsAvailable((String)staffListAdd.getSelectedItem(), dateLookedAt);
+                else
+                    timesOptions = Main.getAllTimeSlots();
                 timesListAdd.setEnabled(true);
                 
                 for (String val : timesOptions)
@@ -574,6 +605,16 @@ public class GUI extends JFrame {
                 timesListAdd.addItem(options[0]);
                 timesListAdd.setEnabled(false);
             }
+        }
+        
+        public void resetAddApp() {
+            
+            /*radioGroupAdd.clearSelection();
+            routineTypeAdd.setSelected(false);
+            careManagementTypeAdd.setSelected(false);*/
+            dateAddText.setText("");
+            updateListOfStaff();
+            updateListOfTimes();
         }
         
 	private class Listener implements ActionListener, ItemListener {
@@ -680,16 +721,74 @@ public class GUI extends JFrame {
                         
                         // addAppFrame actions listener
                         if (e.getSource() == checkDateButton) {
-                            updateListOfStaff();
-                            updateListOfTimes();
+                            if (! dateAddText.getText().equals("")) {
+                                if (Main.dateIsInCorrectFormat(dateAddText.getText())) {
+                                    if (Main.gpIsOpenOn(dateAddText.getText())) {
+                                        dateLookedAt = dateAddText.getText();
+                                        updateListOfStaff();
+                                        updateListOfTimes();
+                                    }
+                                    else {
+                                        resetAddApp();
+                                        JOptionPane.showMessageDialog(null, "Sorry the GP is not open on this day !!");
+                                    }
+                                }
+                                else {
+                                    resetAddApp();
+                                    JOptionPane.showMessageDialog(null, "Please enter date in this format:\nyyyy-mm-dd");
+                                }
+                            }
+                            else {
+                                JOptionPane.showMessageDialog(null, "Please enter a date !!");
+                            }
                         }
                         else if (e.getSource() == submitAdd) {
-                            
+                            String msg = "";
+                            boolean incomplete = true;
+                            if (! typeChosenAdd.equalsIgnoreCase("Routine") && ! typeChosenAdd.equalsIgnoreCase("Care Management"))
+                            //if (! routineTypeAdd.isSelected() || ! careManagementTypeAdd.isSelected())
+                                msg += "- Choose Type of Appointment\n";
+                            if (patientAddText.getText().equals(""))
+                                msg += "- Enter patient name\n";
+                            if (dateAddText.getText().equals("") || ! Main.dateIsInCorrectFormat(dateAddText.getText()) || ! Main.gpIsOpenOn(dateAddText.getText()))
+                                msg += "- Add a correct date\n";
+                            if (staffListAdd.getSelectedItem().equals("Add & Check Date First") || staffListAdd.getSelectedItem().equals("") || staffListAdd.getSelectedItem().equals(null))
+                                msg += "- Select staff\n";
+                            if (timesListAdd.getSelectedItem().equals("Add & Check Date First") || timesListAdd.getSelectedItem().equals("") || staffListAdd.getSelectedItem().equals(null))
+                                msg += "- Select a timeslot\n";
+                            if (msg.equals(""))
+                                incomplete = false;
+                            else
+                                JOptionPane.showMessageDialog(null, msg);
+                            // If form is complete add the new appointment.
+                            if (! incomplete) {
+                                // Add new appointment
+                                String[] timeSlots = timesListAdd.getSelectedItem().toString().split("-");
+                                String[] array = {
+                                    typeChosenAdd,
+                                    patientAddText.getText(),
+                                    staffListAdd.getSelectedItem().toString(),
+                                    dateAddText.getText(),
+                                    timeSlots[0],
+                                    timeSlots[1]
+                                };
+                                Main.addAppointment(array);
+                                
+                                // Update availability timeslots
+                                if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name LIKE '"+staffListAdd.getSelectedItem()+"' ;")) {
+                                    Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +" = 'n' WHERE name = '"+ staffListAdd.getSelectedItem().toString() +"' AND date = '"+ dateAddText.getText() +"' ;");
+                                }
+                                else {
+                                    Main.execute("INSERT INTO doctorsandnurses (name, date, "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +") VALUES ('"+ staffListAdd.getSelectedItem().toString() +"', '"+ dateAddText.getText() +"', '"+ "n" +"') ;");
+                                }
+                                JOptionPane.showConfirmDialog(null, "Appointment has been recorded successfully.", "Complete", JOptionPane.CLOSED_OPTION);
+                                addAppFrame.setVisible(false);
+                            }
                         }
                         else if (e.getSource() == resetAdd) {
                             
                             //idAddText.setText("");
-                            typeAddText.setText("");
+                            //typeAddText.setText("");
                             patientAddText.setText("");
                             //staffAddText.setText("");
                             dateAddText.setText("");
@@ -743,11 +842,19 @@ public class GUI extends JFrame {
                 
                 public void itemStateChanged(ItemEvent e) {
                     
-                    if (e.getStateChange() == ItemEvent.SELECTED) {
+                    if (routineTypeAdd.isSelected()) {
+                        //JOptionPane.showMessageDialog(null, "Routine is selected");
+                        typeChosenAdd = "Routine";
+                    }
+                    else if (careManagementTypeAdd.isSelected()) {
+                        //JOptionPane.showMessageDialog(null, "Care Management is selected");
+                        typeChosenAdd = "Care Management";
+                    }
+                    
+                    if (e.getStateChange() == ItemEvent.SELECTED) { // If a staff is selected from the staff list.
                         //JOptionPane.showMessageDialog(null, "Selected Here");
                         updateListOfTimes();
                     }
-                    //if (e.getStateChange() == ItemEvent.DESELECTED) {}
                 }
 	}
 	
