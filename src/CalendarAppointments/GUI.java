@@ -9,8 +9,11 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
 
 public class GUI extends JFrame {
     
@@ -155,9 +158,20 @@ public class GUI extends JFrame {
 					};*/
                 tableModel = new TableModel();
 		//appTable = new JTable(tableModel);
-                appTable = new JTable(tableModel);
+                //final TableCellRenderer buttonsRenderer = new ButtonsRenderer();
+                appTable = new JTable(tableModel) {
+                    public TableCellRenderer getCellRenderer(int row, int column) {
+                        if ((row == 0) && (column == 0)) {
+                            return new ButtonsRenderer();
+                        }
+                        // else...
+                        return super.getCellRenderer(row, column);
+                    }
+                };
+                //appTable.setDefaultRenderer(Object.class, new ButtonsRenderer());
+                //TableCellRenderer tableCellRenderer = appTable.getCellRenderer(0,3);
                 appTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-                appTable.setPreferredScrollableViewportSize(new Dimension(500, 500));
+                appTable.setPreferredScrollableViewportSize(new Dimension(500, 400));
                 //appTable.setFillsViewportHeight(true);
                 //appTable = new JTable(tableModel.getTableData(), tableModel.getColumnsNames());
 		// To set the preferred view port size, which may require me to add a scroll bar in order to see the entire table.
@@ -232,7 +246,7 @@ public class GUI extends JFrame {
                 
 		//appFrame.add(appPanel);
 		appScroll = new JScrollPane(appTable);
-                appTable.setFillsViewportHeight(true);
+                //appTable.setFillsViewportHeight(true);
 		// Horizontal spacing //c.weightx = 1.0;
 		// Vertical spacing //c.weighty = 1.0;
 		mainPanel.add(optionsPanel);
@@ -242,6 +256,7 @@ public class GUI extends JFrame {
 		
 		Listener listen = new Listener();
 		button1.addActionListener(listen);
+                appTable.addMouseListener(listen);
                 searchButton.addActionListener(listen);
                 resetButton.addActionListener(listen);
                 addButton.addActionListener(listen);
@@ -617,7 +632,7 @@ public class GUI extends JFrame {
             updateListOfTimes();
         }
         
-	private class Listener implements ActionListener, ItemListener {
+	private class Listener implements ActionListener, ItemListener, MouseListener {
 		
 		public void actionPerformed(ActionEvent e) {
 			
@@ -854,6 +869,28 @@ public class GUI extends JFrame {
                     if (e.getStateChange() == ItemEvent.SELECTED) { // If a staff is selected from the staff list.
                         //JOptionPane.showMessageDialog(null, "Selected Here");
                         updateListOfTimes();
+                    }
+                }
+                
+                public void mouseExited(MouseEvent e) {}
+                
+                public void mouseEntered(MouseEvent e) {}
+                
+                public void mouseReleased(MouseEvent e) {}
+                
+                public void mousePressed(MouseEvent e) {}
+                
+                public void mouseClicked(MouseEvent e) {
+                    
+                    if (e.getClickCount() == 1) {
+                        int row = appTable.getSelectedRow();
+                        int col = appTable.getSelectedColumn();
+                        String tableValue = (String) appTable.getModel().getValueAt(row, col);
+                        JOptionPane.showMessageDialog(null, tableValue);
+                    }
+                    
+                    if (e.getClickCount() == 2) {
+                        JOptionPane.showMessageDialog(null, "You double clicked here.");
                     }
                 }
 	}
