@@ -5,8 +5,8 @@ import javax.swing.*;
 
 public class TableModel extends AbstractTableModel {
     
-    //private String[] columnNames = {"App.ID", "Type", "Patient ID", "Satff ID", "Date", "Start Time", "Finish Time"};
-    private String[] columnNames = {"Edit/Remove", "App.ID", "Type", "Patient ID", "Satff ID", "Date", "Start Time", "Finish Time"};
+    private String[] columnNames = {"App.ID", "Type", "Patient ID", "Satff ID", "Date", "Start Time", "Finish Time"};
+    //private String[] columnNames = {"Edit/Remove", "App.ID", "Type", "Patient ID", "Satff ID", "Date", "Start Time", "Finish Time"};
     private String[] filter = {"", "", "", "", "", "", ""};
     private Object[][] tableData;
     
@@ -14,14 +14,14 @@ public class TableModel extends AbstractTableModel {
         
         super();
         tableData = Main.getAppointments(filter);
-        tableData = addControlButtons(tableData);
+        //tableData = addControlButtons(tableData);
     }
     
     public void setFilter(String[] filterArray) {
         
         filter = filterArray;
         tableData = Main.getAppointments(filter);
-        tableData = addControlButtons(tableData);
+        //tableData = addControlButtons(tableData);
     }
     
     public String[] getColumnsNames() {
@@ -68,10 +68,11 @@ public class TableModel extends AbstractTableModel {
     
     public boolean isCellEditable(int row, int col) {
         
-        if (col < 2)
+        /*if (col < 2) // Means if row index selected is less than 2, then it cannot be edited.
             return false;
         else
-            return true;
+            return true;*/
+        return false;
     }
     
     public Object[][] addControlButtons(Object[][] tableData) {

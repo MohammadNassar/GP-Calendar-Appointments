@@ -36,7 +36,6 @@ public class GUI extends JFrame {
 	private JTable appTable;
 	private JScrollPane appScroll, optionsScroll, mainScroll;
         private JTextArea textArea1, textArea2;
-        private String dateLookedAt, typeChosenAdd = "";
         private String[] arr = {};
         private String[][] tableData = Main.getAppointments(arr);
 	
@@ -48,16 +47,17 @@ public class GUI extends JFrame {
         private JTextField idAddText, typeAddText, patientAddText, staffAddText, dateAddText, startTimeAddText, finishTimeAddText;
         private JComboBox staffListAdd, timesListAdd;
         private JButton checkDateButton, submitAdd, resetAdd, cancelAdd;
-        private String timeSelectedAdd;
+        private String timeSelectedAdd, dateLookedAt, typeChosenAdd = "";
         
         // updateAppFrame items
-        private JFrame updateAppFrame;
-        private JLabel idUpdateLabel, typeUpdateLabel, patientUpdateLabel, staffUpdateLabel, dateUpdateLabel, startTimeUpdateLabel, finishTimeUpdateLabel, appTimeUpdateLabel;
-        private JRadioButton routineTypeUpdate, careManagementTypeUpdate;
-        private ButtonGroup radioGroupUpdate;
-        private JTextField idUpdateText, typeUpdateText, patientUpdateText, staffUpdateText, dateUpdateText, startTimeUpdateText, finishTimeUpdateText;
-        private JComboBox timesListUpdate;
-        private JButton submitUpdate, resetUpdate, cancelUpdate;
+        private JFrame editAppFrame;
+        private JLabel idEditLabel, typeEditLabel, patientEditLabel, dateEditLabel, staffEditLabel, timeSlotEditLabel;
+        private JRadioButton routineTypeEdit, careManagementTypeEdit;
+        private ButtonGroup radioGroupEdit;
+        private JTextField idEditText, typeEditText, patientEditText, dateEditText, staffEditText, timeSlotEditText;
+        private JComboBox timesListEdit, staffListEdit;
+        private JButton checkDateEdit, submitEdit, editEdit, removeEdit, resetEdit, cancelEdit;
+        private String typeChosenEdit = "";
         
         // removeAppFrame items
         private JFrame removeAppFrame;
@@ -157,9 +157,8 @@ public class GUI extends JFrame {
 						{"1", "Care Management", "5 ", "2 ", "02/02/2014 ", "00:10 ", "00:50 "}
 					};*/
                 tableModel = new TableModel();
-		//appTable = new JTable(tableModel);
-                //final TableCellRenderer buttonsRenderer = new ButtonsRenderer();
-                appTable = new JTable(tableModel) {
+		appTable = new JTable(tableModel);
+                /*appTable = new JTable(tableModel) {
                     public TableCellRenderer getCellRenderer(int row, int column) {
                         if ((row == 0) && (column == 0)) {
                             return new ButtonsRenderer();
@@ -167,7 +166,7 @@ public class GUI extends JFrame {
                         // else...
                         return super.getCellRenderer(row, column);
                     }
-                };
+                };*/
                 //appTable.setDefaultRenderer(Object.class, new ButtonsRenderer());
                 //TableCellRenderer tableCellRenderer = appTable.getCellRenderer(0,3);
                 appTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -419,164 +418,117 @@ public class GUI extends JFrame {
         
         public void updateAppFrame() {
             
-            updateAppFrame = new JFrame("Update an Appointment");
-            updateAppFrame.setVisible(true);
-            updateAppFrame.setBounds(400, 200, 350, 400);
-            JPanel updateAppPanel = new JPanel();
-            updateAppPanel.setLayout(new GridBagLayout());
+            editAppFrame = new JFrame("Update an Appointment");
+            editAppFrame.setVisible(true);
+            editAppFrame.setBounds(400, 200, 350, 500);
+            JPanel editAppPanel = new JPanel();
+            editAppPanel.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             
-            idUpdateLabel = new JLabel("ID");
-            typeUpdateLabel = new JLabel("Type");
-            patientUpdateLabel = new JLabel("Patient");
-            staffUpdateLabel = new JLabel("Staff");
-            dateUpdateLabel = new JLabel("Date");
-            startTimeUpdateLabel = new JLabel("Start Time");
-            finishTimeUpdateLabel = new JLabel("Finish Time");
+            idEditLabel = new JLabel("ID");
+            typeEditLabel = new JLabel("Type");
+            patientEditLabel = new JLabel("Patient");
+            dateEditLabel = new JLabel("Date");
+            staffEditLabel = new JLabel("Staff");
+            timeSlotEditLabel = new JLabel("Time Slot");
             
-            idUpdateText = new JTextField(15);
-            typeUpdateText = new JTextField(15);
-            patientUpdateText = new JTextField(15);
-            staffUpdateText = new JTextField(15);
-            dateUpdateText = new JTextField(15);
-            startTimeUpdateText = new JTextField(15);
-            finishTimeUpdateText = new JTextField(15);
+            idEditText = new JTextField();
+            idEditText.setEditable(false);
+            //typeEditText = new JTextField(15);
+            routineTypeEdit = new JRadioButton("Routine", false);
+            routineTypeEdit.setEnabled(false);
+            careManagementTypeEdit = new JRadioButton("Care Management", false);
+            careManagementTypeEdit.setEnabled(false);
+            radioGroupEdit = new ButtonGroup();
+            radioGroupEdit.add(routineTypeEdit);
+            radioGroupEdit.add(careManagementTypeEdit);
+            patientEditText = new JTextField(15);
+            patientEditText.setEditable(false);
+            dateEditText = new JTextField(15);
+            dateEditText.setEditable(false);
+            checkDateEdit = new JButton("Check Date");
+            staffEditText = new JTextField(15);
+            staffEditText.setEditable(false);
+            timeSlotEditText = new JTextField(15);
+            timeSlotEditText.setEditable(false);
+            staffListEdit = new JComboBox(new String[]{});
+            staffListEdit.setVisible(true);
+            timesListEdit = new JComboBox(new String[]{});
+            timesListEdit.setVisible(true);
             
-            submitUpdate = new JButton("Submit");
-            resetUpdate = new JButton("Reset");
-            cancelUpdate = new JButton("Cancel");
+            typeChosenEdit = "";
+            
+            editEdit = new JButton("Edit");
+            removeEdit = new JButton("Delete");
+            submitEdit = new JButton("Submit");
+            resetEdit = new JButton("Reset");
+            cancelEdit = new JButton("Cancel");
             
             c.gridx = 0;
             c.gridy = 1;
-            updateAppPanel.add(idUpdateLabel, c);
+            editAppPanel.add(idEditLabel, c);
             c.gridy = 2;
-            updateAppPanel.add(idUpdateText, c);
+            editAppPanel.add(idEditText, c);
             c.gridy = 3;
-            updateAppPanel.add(typeUpdateLabel, c);
+            editAppPanel.add(typeEditLabel, c);
             c.gridy = 4;
-            updateAppPanel.add(typeUpdateText, c);
+            editAppPanel.add(routineTypeEdit, c);
             c.gridy = 5;
-            updateAppPanel.add(patientUpdateLabel, c);
+            editAppPanel.add(careManagementTypeEdit, c);
             c.gridy = 6;
-            updateAppPanel.add(patientUpdateText, c);
+            editAppPanel.add(patientEditLabel, c);
             c.gridy = 7;
-            updateAppPanel.add(staffUpdateLabel, c);
+            editAppPanel.add(patientEditText, c);
             c.gridy = 8;
-            updateAppPanel.add(staffUpdateText, c);
+            editAppPanel.add(dateEditLabel, c);
             c.gridy = 9;
-            updateAppPanel.add(dateUpdateLabel, c);
+            editAppPanel.add(dateEditText, c);
             c.gridy = 10;
-            updateAppPanel.add(dateUpdateText, c);
+            editAppPanel.add(checkDateEdit, c);
             c.gridy = 11;
-            updateAppPanel.add(startTimeUpdateLabel, c);
+            editAppPanel.add(staffEditLabel, c);
             c.gridy = 12;
-            updateAppPanel.add(startTimeUpdateText, c);
+            editAppPanel.add(staffListEdit, c);
             c.gridy = 13;
-            updateAppPanel.add(finishTimeUpdateLabel, c);
+            //editAppPanel.add(staffEditText, c);
             c.gridy = 14;
-            updateAppPanel.add(finishTimeUpdateText, c);
+            editAppPanel.add(timeSlotEditLabel, c);
             c.gridy = 15;
-            updateAppPanel.add(submitUpdate, c);
+            //editAppPanel.add(timeSlotEditText, c);
             c.gridy = 16;
-            updateAppPanel.add(resetUpdate, c);
+            editAppPanel.add(timesListEdit, c);
             c.gridy = 17;
-            updateAppPanel.add(cancelUpdate, c);
+            editAppPanel.add(editEdit, c);
+            c.gridy = 18;
+            editAppPanel.add(removeEdit, c);
+            c.gridy = 19;
+            editAppPanel.add(submitEdit, c);
+            c.gridy = 20;
+            editAppPanel.add(resetEdit, c);
+            c.gridy = 21;
+            editAppPanel.add(cancelEdit, c);
             
-            JScrollPane updateAppScroll = new JScrollPane(updateAppPanel);
-            updateAppFrame.add(updateAppScroll);
+            JScrollPane updateAppScroll = new JScrollPane(editAppPanel);
+            editAppFrame.add(updateAppScroll);
             
             Listener listen = new Listener();
             
-            submitUpdate.addActionListener(listen);
-            resetUpdate.addActionListener(listen);
+            routineTypeEdit.addItemListener(listen);
+            careManagementTypeEdit.addItemListener(listen);
+            staffListEdit.addItemListener(listen);
+            
+            editEdit.addActionListener(listen);
+            removeEdit.addActionListener(listen);
+            submitEdit.addActionListener(listen);
+            resetEdit.addActionListener(listen);
             //cancelUpdate.addActionListener(listen);
-            cancelUpdate.addActionListener(new ActionListener() {
+            cancelEdit.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    updateAppFrame.setVisible(false);
+                    editAppFrame.setVisible(false);
                 }
             });
         }
         
-        public void removeAppFrame() {
-            
-            removeAppFrame = new JFrame("Remove an Appointment");
-            removeAppFrame.setVisible(true);
-            removeAppFrame.setBounds(400, 200, 350, 400);
-            JPanel removeAppPanel = new JPanel();
-            removeAppPanel.setLayout(new GridBagLayout());
-            GridBagConstraints c = new GridBagConstraints();
-            
-            idRemoveLabel = new JLabel("ID");
-            typeRemoveLabel = new JLabel("Type");
-            patientRemoveLabel = new JLabel("Patient");
-            staffRemoveLabel = new JLabel("Staff");
-            dateRemoveLabel = new JLabel("Date");
-            startTimeRemoveLabel = new JLabel("Start Time");
-            finishTimeRemoveLabel = new JLabel("Finish Time");
-            
-            idRemoveText = new JTextField(15);
-            typeRemoveText = new JTextField(15);
-            patientRemoveText = new JTextField(15);
-            staffRemoveText = new JTextField(15);
-            dateRemoveText = new JTextField(15);
-            startTimeRemoveText = new JTextField(15);
-            finishTimeRemoveText = new JTextField(15);
-            
-            submitRemove = new JButton("Submit");
-            resetRemove = new JButton("Reset");
-            cancelRemove = new JButton("Cancel");
-            
-            c.gridx = 0;
-            c.gridy = 1;
-            removeAppPanel.add(idRemoveLabel, c);
-            c.gridy = 2;
-            removeAppPanel.add(idRemoveText, c);
-            c.gridy = 3;
-            removeAppPanel.add(typeRemoveLabel, c);
-            c.gridy = 4;
-            removeAppPanel.add(typeRemoveText, c);
-            c.gridy = 5;
-            removeAppPanel.add(patientRemoveLabel, c);
-            c.gridy = 6;
-            removeAppPanel.add(patientRemoveText, c);
-            c.gridy = 7;
-            removeAppPanel.add(staffRemoveLabel, c);
-            c.gridy = 8;
-            removeAppPanel.add(staffRemoveText, c);
-            c.gridy = 9;
-            removeAppPanel.add(dateRemoveLabel, c);
-            c.gridy = 10;
-            removeAppPanel.add(dateRemoveText, c);
-            c.gridy = 11;
-            removeAppPanel.add(startTimeRemoveLabel, c);
-            c.gridy = 12;
-            removeAppPanel.add(startTimeRemoveText, c);
-            c.gridy = 13;
-            removeAppPanel.add(finishTimeRemoveLabel, c);
-            c.gridy = 14;
-            removeAppPanel.add(finishTimeRemoveText, c);
-            c.gridy = 15;
-            removeAppPanel.add(submitRemove, c);
-            c.gridy = 16;
-            removeAppPanel.add(resetRemove, c);
-            c.gridy = 17;
-            removeAppPanel.add(cancelRemove, c);
-            
-            JScrollPane removeAppScroll = new JScrollPane(removeAppPanel);
-            removeAppFrame.add(removeAppScroll);
-            
-            Listener listen = new Listener();
-            
-            submitRemove.addActionListener(listen);
-            resetRemove.addActionListener(listen);
-            //cancelRemove.addActionListener(listen);
-            cancelRemove.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    removeAppFrame.setVisible(false);
-                }
-            });
-        }
-	
         public void updateListOfStaff() {
             
             //System.out.println("focusLost");
@@ -622,6 +574,53 @@ public class GUI extends JFrame {
             }
         }
         
+        public JComboBox updateListOfStaff(JComboBox list) {
+            
+            //System.out.println("focusLost");
+            list.removeAllItems();
+            String[] staffOptions = new String[0];
+
+            if (! dateEditText.getText().equals("")) {
+                //staffOptions = Main.getOneColumnFromTable("SELECT name FROM doctorsandnurses WHERE date LIKE '" + dateEditText.getText() + "' ;");
+                staffOptions = Main.getOneColumnFromTable("SELECT name FROM doctorsandnurses ;");
+                staffOptions = Main.removeRepeated(staffOptions);
+                list.setEnabled(true);
+                
+                for (String val : staffOptions)
+                    list.addItem(val);
+            }
+            else {
+                String[] options = {"Add & Check Date First"};
+                list.addItem(options[0]);
+                list.setEnabled(false);
+            }
+            return list;
+        }
+        
+        public JComboBox updateListOfTimes(JComboBox list) {
+            
+            //System.out.println("focusLost");
+            list.removeAllItems();
+            String[] timesOptions = new String[0];
+            
+            if (! dateEditText.getText().equals("")) {
+                if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateEditText.getText()+"' AND  name LIKE '"+staffListEdit.getSelectedItem()+"' ;"))
+                    timesOptions = Main.getTimeSlotsAvailable((String)staffListEdit.getSelectedItem(), dateEditText.getText());
+                else
+                    timesOptions = Main.getAllTimeSlots();
+                list.setEnabled(true);
+                
+                for (String val : timesOptions)
+                    list.addItem(val);
+            }
+            else {
+                String[] options = {"Add & Check Date First"};
+                list.addItem(options[0]);
+                list.setEnabled(false);
+            }
+            return list;
+        }
+        
         public void resetAddApp() {
             
             /*radioGroupAdd.clearSelection();
@@ -630,6 +629,42 @@ public class GUI extends JFrame {
             dateAddText.setText("");
             updateListOfStaff();
             updateListOfTimes();
+        }
+        
+        public void resetEditApp() {
+            
+            dateEditText.setText("");
+            staffListEdit = updateListOfStaff(staffListEdit);
+            timesListEdit = updateListOfTimes(timesListEdit);
+        }
+        
+        public void getTableRowDetails(int row) {
+            
+            String id = (String) appTable.getModel().getValueAt(row, 0);
+            String type = (String) appTable.getModel().getValueAt(row, 1);
+            String patient = (String) appTable.getModel().getValueAt(row, 2);
+            String staff = (String) appTable.getModel().getValueAt(row, 3);
+            String date = (String) appTable.getModel().getValueAt(row, 4);
+            String timeSlot1 = ((String) appTable.getModel().getValueAt(row, 5)).substring(0, 5);
+            String timeSlot2 = appTable.getModel().getValueAt(row, 6).toString().substring(0, 5);
+            String timeSlot = timeSlot1 + "-" + timeSlot2;
+            
+            /*JOptionPane.showMessageDialog(null, id + "\n" + type + "\n" + patient + "\n" + date + "\n" + 
+                                                staff + "\n" + timeSlot1 + "\n" + timeSlot2 + "\n" + timeSlot + "\n");*/
+            
+            idEditText.setText(id);
+            if (type.equalsIgnoreCase("routine"))
+                routineTypeEdit.setSelected(true);
+            else
+                careManagementTypeEdit.setSelected(true);
+            patientEditText.setText(patient);
+            dateEditText.setText(date);
+            staffEditText.setText(staff);
+            timeSlotEditText.setText(timeSlot);
+            staffListEdit.removeAllItems();
+            timesListEdit.removeAllItems();
+            staffListEdit.addItem(staff);
+            timesListEdit.addItem(timeSlot);
         }
         
 	private class Listener implements ActionListener, ItemListener, MouseListener {
@@ -731,7 +766,7 @@ public class GUI extends JFrame {
                         }
                         else if (e.getSource() == removeButton) {
                             
-                            removeAppFrame();
+                            updateAppFrame();
                         }
                         
                         // addAppFrame actions listener
@@ -817,40 +852,64 @@ public class GUI extends JFrame {
                         }
                         
                         // updateAppFrame actions listener
-                        if (e.getSource() == submitUpdate) {
+                        if (e.getSource() == checkDateEdit) {
+                            if (! dateEditText.getText().equals("")) {
+                                if (Main.dateIsInCorrectFormat(dateEditText.getText())) {
+                                    if (Main.gpIsOpenOn(dateEditText.getText())) {
+                                        //dateLookedAt = dateEditText.getText();
+                                        staffListEdit = updateListOfStaff(staffListEdit);
+                                        timesListEdit = updateListOfTimes(timesListEdit);
+                                    }
+                                    else {
+                                        resetEditApp();
+                                        JOptionPane.showMessageDialog(null, "Sorry the GP is not open on this day !!");
+                                    }
+                                }
+                                else {
+                                    resetEditApp();
+                                    JOptionPane.showMessageDialog(null, "Please enter date in this format:\nyyyy-mm-dd");
+                                }
+                            }
+                            else {
+                                JOptionPane.showMessageDialog(null, "Please enter a date !!");
+                            }
+                        }
+                        else if (e.getSource() == editEdit) {
+                            routineTypeEdit.setEnabled(true);
+                            careManagementTypeEdit.setEnabled(true);
+                            patientEditText.setEditable(true);
+                            dateEditText.setEditable(true);
+                            staffListEdit = updateListOfStaff(staffListEdit);
+                            timesListEdit = updateListOfTimes(timesListEdit);
+                        }
+                        else if (e.getSource() == removeEdit) {
                             
                         }
-                        else if (e.getSource() == resetUpdate) {
+                        else if (e.getSource() == submitEdit) {
                             
-                            idUpdateText.setText("");
-                            typeUpdateText.setText("");
-                            patientUpdateText.setText("");
-                            staffUpdateText.setText("");
-                            dateUpdateText.setText("");
-                            //startTimeUpdateText.setText("");
-                            //finishTimeUpdateText.setText("");
-                            //timesListAdd.removeAllItems();
                         }
-                        else if (e.getSource() == cancelUpdate) {
+                        else if (e.getSource() == resetEdit) {
+                            
+                            idEditText.setText("");
+                            typeEditText.setText("");
+                            patientEditText.setText("");
+                            dateEditText.setText("");
+                            staffEditText.setVisible(false);
+                            timeSlotEditText.setVisible(false);
+                            staffListEdit.setVisible(true);
+                            timesListEdit.setVisible(true);
+                            staffListEdit = updateListOfStaff(staffListEdit);
+                            timesListEdit = updateListOfTimes(timesListEdit);
+                        }
+                        else if (e.getSource() == cancelEdit) {
                             
                         }
                         
-                        // removeAppFrame actions listener
-                        if (e.getSource() == submitRemove) {
+                        // setHolidaysFrame actions listener
+                        if (e.getSource() == null) {
                             
                         }
-                        else if (e.getSource() == resetRemove) {
-                            
-                            idRemoveText.setText("");
-                            typeRemoveText.setText("");
-                            patientRemoveText.setText("");
-                            staffRemoveText.setText("");
-                            dateRemoveText.setText("");
-                            //startTimeRemoveText.setText("");
-                            //finishTimeRemoveText.setText("");
-                        }
-                        else if (e.getSource() == cancelRemove) {
-                            
+                        else if (e.getSource() == null) {
                             
                         }
 		}
@@ -860,15 +919,18 @@ public class GUI extends JFrame {
                     if (routineTypeAdd.isSelected()) {
                         //JOptionPane.showMessageDialog(null, "Routine is selected");
                         typeChosenAdd = "Routine";
+                        typeChosenEdit = "Routine";
                     }
                     else if (careManagementTypeAdd.isSelected()) {
                         //JOptionPane.showMessageDialog(null, "Care Management is selected");
                         typeChosenAdd = "Care Management";
+                        typeChosenEdit = "Care Management";
                     }
                     
                     if (e.getStateChange() == ItemEvent.SELECTED) { // If a staff is selected from the staff list.
                         //JOptionPane.showMessageDialog(null, "Selected Here");
                         updateListOfTimes();
+                        timesListEdit = updateListOfTimes(timesListEdit);
                     }
                 }
                 
@@ -883,14 +945,17 @@ public class GUI extends JFrame {
                 public void mouseClicked(MouseEvent e) {
                     
                     if (e.getClickCount() == 1) {
-                        int row = appTable.getSelectedRow();
-                        int col = appTable.getSelectedColumn();
-                        String tableValue = (String) appTable.getModel().getValueAt(row, col);
-                        JOptionPane.showMessageDialog(null, tableValue);
+                        
                     }
                     
                     if (e.getClickCount() == 2) {
-                        JOptionPane.showMessageDialog(null, "You double clicked here.");
+                        /*int row = appTable.getSelectedRow();
+                        int col = appTable.getSelectedColumn();
+                        String tableValue = (String) appTable.getModel().getValueAt(row, col);
+                        JOptionPane.showMessageDialog(null, row + " " + col + "\n" + tableValue);*/
+                        int row = appTable.getSelectedRow();
+                        updateAppFrame();
+                        getTableRowDetails(row);
                     }
                 }
 	}
