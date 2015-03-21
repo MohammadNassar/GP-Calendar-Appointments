@@ -35,6 +35,7 @@ public class Main {
         DatabaseConnection connect = new DatabaseConnection();
         
         connect.execute(instruction);
+        System.out.println(instruction);
     }
     
     public static String[][] getAppointments(String[] line) {

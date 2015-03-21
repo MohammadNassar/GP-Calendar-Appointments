@@ -57,7 +57,8 @@ public class GUI extends JFrame {
         private JTextField idEditText, typeEditText, patientEditText, dateEditText, staffEditText, timeSlotEditText;
         private JComboBox timesListEdit, staffListEdit;
         private JButton checkDateEdit, submitEdit, editEdit, removeEdit, resetEdit, cancelEdit;
-        private String typeChosenEdit = "";
+        private JTextArea rowInfoTextArea;
+        private String rowInfo, typeChosenEdit = "";
         
         // removeAppFrame items
         private JFrame removeAppFrame;
@@ -416,6 +417,159 @@ public class GUI extends JFrame {
             });
         }
         
+        public void editAppFrame() {
+            
+            editAppFrame = new JFrame("Add an Appointment");
+            editAppFrame.setVisible(true);
+            editAppFrame.setBounds(400, 200, 350, 400);
+            JPanel editAppPanel = new JPanel();
+            editAppPanel.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            
+            //idAddLabel  = new JLabel("ID");
+            typeEditLabel = new JLabel("Type");
+            patientEditLabel = new JLabel("Patient");
+            dateEditLabel = new JLabel("Date");
+            staffEditLabel = new JLabel("Staff");
+            //startTimeEditLabel = new JLabel("Start Time");
+            //finishTimeEditLabel = new JLabel("Finish Time");
+            timeSlotEditLabel = new JLabel("Choose Time Slot");
+            
+            
+            //idAddText = new JTextField(15);
+            //typeAddText = new JTextField(15);
+            routineTypeEdit = new JRadioButton("Routine", false);
+            careManagementTypeEdit = new JRadioButton("Care Management", false);
+                radioGroupEdit = new ButtonGroup();
+                radioGroupEdit.add(routineTypeEdit);
+                radioGroupEdit.add(careManagementTypeEdit);
+                
+            patientEditText = new JTextField(15);
+            //staffAddText = new JTextField(15);
+            dateEditText = new JTextField(15);
+            //startTimeAddText = new JTextField(15);
+            //finishTimeAddText = new JTextField(15);
+            
+            String[] arr = {"Add & Check Date First"};
+            staffListEdit = new JComboBox(arr);
+            staffListEdit.setEnabled(false);
+            
+            String[] timeSlotsAvailableArray = {"Add & Check Date First"};
+            timesListEdit = new JComboBox(timeSlotsAvailableArray);
+            timesListEdit.setEnabled(false);
+            
+            dateLookedAt = "";
+            typeChosenAdd = "";
+            
+            // By adding this button (which does not really have an action) I invoke the user to make the focus lost from the date text field.
+            checkDateEdit = new JButton("Check Date");
+            submitEdit = new JButton("Submit");
+            resetEdit = new JButton("Reset");
+            cancelEdit = new JButton("Cancel");
+            
+            c.gridx = 0;
+            c.gridy = 1;
+            //addAppPanel.add(idEditLabel, c);
+            c.gridy = 2;
+            //addAppPanel.add(idEditText, c);
+            c.gridy = 3;
+            editAppPanel.add(typeEditLabel, c);
+            c.gridy = 4;
+            //addAppPanel.add(typeEditText, c);
+            editAppPanel.add(routineTypeEdit, c);
+            c.gridy = 5; //c.gridx = 1;
+            editAppPanel.add(careManagementTypeEdit, c);
+            c.gridy = 6; //c.gridx = 0;
+            editAppPanel.add(patientEditLabel, c);
+            c.gridy = 7;
+            editAppPanel.add(patientEditText, c);
+            c.gridy = 8;
+            //addAppPanel.add(staffAddText, c);
+            c.gridy = 9;
+            editAppPanel.add(dateEditLabel, c);
+            c.gridy = 10;
+            editAppPanel.add(dateEditText, c);
+            c.gridy = 11;
+            //addAppPanel.add(startTimeEditLabel, c);
+            c.gridy = 12;
+            //addAppPanel.add(startTimeEditText, c);
+            c.gridy = 13;
+            //addAppPanel.add(finishTimeEditLabel, c);
+            c.gridy = 14;
+            //addAppPanel.add(finishTimeEditText, c);
+            c.gridy = 15;
+            editAppPanel.add(checkDateEdit, c);
+            c.gridy = 16;
+            editAppPanel.add(staffEditLabel, c);
+            c.gridy = 17;
+            editAppPanel.add(staffListEdit, c);
+            c.gridy = 18;
+            editAppPanel.add(timeSlotEditLabel, c);
+            c.gridy = 19;
+            editAppPanel.add(timesListEdit, c);
+            c.gridy = 20;
+            editAppPanel.add(submitEdit, c);
+            c.gridy = 21;
+            editAppPanel.add(resetEdit, c);
+            c.gridy = 22;
+            editAppPanel.add(cancelEdit, c);
+            
+            JScrollPane editAppScroll = new JScrollPane(editAppPanel);
+            addAppFrame.add(editAppScroll);
+            
+            Listener listen = new Listener();
+            
+            /*dateAddText.addFocusListener(
+                    new FocusListener(){
+                        public void focusGained(FocusEvent e) {
+                            //System.out.println("focusGained");
+                            
+                        }
+                        public void focusLost(FocusEvent e) {
+                            //updateListOfStaff();
+                            // I had to comment out the line above, as it used to re-change my chosen staff name (from the list) after and re-(gain & lose focus) from the date text field.
+                        }
+                    }
+            );*/
+            
+            /*staffListAdd.addFocusListener(
+                    new FocusListener(){
+                        public void focusGained(FocusEvent e) {
+                            //System.out.println("focusGained");
+                            
+                        }
+                        public void focusLost(FocusEvent e) {
+                            //updateListOfTimes();
+                        }
+                    }
+            );*/
+            
+            routineTypeEdit.addItemListener(listen);
+            careManagementTypeEdit.addItemListener(listen);
+            staffListAdd.addItemListener(listen);
+            
+            /*timesListAdd.addActionListener(
+                    new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            timeSelectedAdd = (String ) timesListAdd.getSelectedItem();
+                            //JOptionPane.showMessageDialog(null, timeSelectedAdd);
+                        }
+                    }
+            );*/
+            
+            checkDateEdit.addActionListener(listen);
+            submitEdit.addActionListener(listen);
+            resetEdit.addActionListener(listen);
+            //cancelEdit.addActionListener(listen);
+            cancelEdit.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    addAppFrame.setVisible(false);
+                    //addAppFrame.dispose();
+                    //addAppFrame.hide();
+                }
+            });
+        }
+        
         public void updateAppFrame() {
             
             editAppFrame = new JFrame("Update an Appointment");
@@ -426,42 +580,15 @@ public class GUI extends JFrame {
             GridBagConstraints c = new GridBagConstraints();
             
             idEditLabel = new JLabel("ID");
-            typeEditLabel = new JLabel("Type");
-            patientEditLabel = new JLabel("Patient");
-            dateEditLabel = new JLabel("Date");
-            staffEditLabel = new JLabel("Staff");
-            timeSlotEditLabel = new JLabel("Time Slot");
             
             idEditText = new JTextField();
             idEditText.setEditable(false);
-            //typeEditText = new JTextField(15);
-            routineTypeEdit = new JRadioButton("Routine", false);
-            routineTypeEdit.setEnabled(false);
-            careManagementTypeEdit = new JRadioButton("Care Management", false);
-            careManagementTypeEdit.setEnabled(false);
-            radioGroupEdit = new ButtonGroup();
-            radioGroupEdit.add(routineTypeEdit);
-            radioGroupEdit.add(careManagementTypeEdit);
-            patientEditText = new JTextField(15);
-            patientEditText.setEditable(false);
-            dateEditText = new JTextField(15);
-            dateEditText.setEditable(false);
-            checkDateEdit = new JButton("Check Date");
-            staffEditText = new JTextField(15);
-            staffEditText.setEditable(false);
-            timeSlotEditText = new JTextField(15);
-            timeSlotEditText.setEditable(false);
-            staffListEdit = new JComboBox(new String[]{});
-            staffListEdit.setVisible(true);
-            timesListEdit = new JComboBox(new String[]{});
-            timesListEdit.setVisible(true);
             
-            typeChosenEdit = "";
+            rowInfoTextArea = new JTextArea(rowInfo);
+            JScrollPane textAreaScroll = new JScrollPane(rowInfoTextArea);
             
             editEdit = new JButton("Edit");
             removeEdit = new JButton("Delete");
-            submitEdit = new JButton("Submit");
-            resetEdit = new JButton("Reset");
             cancelEdit = new JButton("Cancel");
             
             c.gridx = 0;
@@ -469,58 +596,22 @@ public class GUI extends JFrame {
             editAppPanel.add(idEditLabel, c);
             c.gridy = 2;
             editAppPanel.add(idEditText, c);
-            c.gridy = 3;
-            editAppPanel.add(typeEditLabel, c);
-            c.gridy = 4;
-            editAppPanel.add(routineTypeEdit, c);
-            c.gridy = 5;
-            editAppPanel.add(careManagementTypeEdit, c);
-            c.gridy = 6;
-            editAppPanel.add(patientEditLabel, c);
-            c.gridy = 7;
-            editAppPanel.add(patientEditText, c);
-            c.gridy = 8;
-            editAppPanel.add(dateEditLabel, c);
-            c.gridy = 9;
-            editAppPanel.add(dateEditText, c);
-            c.gridy = 10;
-            editAppPanel.add(checkDateEdit, c);
-            c.gridy = 11;
-            editAppPanel.add(staffEditLabel, c);
-            c.gridy = 12;
-            editAppPanel.add(staffListEdit, c);
-            c.gridy = 13;
-            //editAppPanel.add(staffEditText, c);
-            c.gridy = 14;
-            editAppPanel.add(timeSlotEditLabel, c);
-            c.gridy = 15;
-            //editAppPanel.add(timeSlotEditText, c);
-            c.gridy = 16;
-            editAppPanel.add(timesListEdit, c);
             c.gridy = 17;
             editAppPanel.add(editEdit, c);
             c.gridy = 18;
             editAppPanel.add(removeEdit, c);
-            c.gridy = 19;
-            editAppPanel.add(submitEdit, c);
-            c.gridy = 20;
-            editAppPanel.add(resetEdit, c);
             c.gridy = 21;
             editAppPanel.add(cancelEdit, c);
+            c.gridy = 22;
+            editAppPanel.add(textAreaScroll);
             
             JScrollPane updateAppScroll = new JScrollPane(editAppPanel);
             editAppFrame.add(updateAppScroll);
             
             Listener listen = new Listener();
             
-            routineTypeEdit.addItemListener(listen);
-            careManagementTypeEdit.addItemListener(listen);
-            staffListEdit.addItemListener(listen);
-            
             editEdit.addActionListener(listen);
             removeEdit.addActionListener(listen);
-            submitEdit.addActionListener(listen);
-            resetEdit.addActionListener(listen);
             //cancelUpdate.addActionListener(listen);
             cancelEdit.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -651,6 +742,10 @@ public class GUI extends JFrame {
             
             /*JOptionPane.showMessageDialog(null, id + "\n" + type + "\n" + patient + "\n" + date + "\n" + 
                                                 staff + "\n" + timeSlot1 + "\n" + timeSlot2 + "\n" + timeSlot + "\n");*/
+            rowInfo = "Patient ID:\t\t" + id + "\nAppointment Type:\t" + type + "\nPatient Name:\t\t" + patient + 
+                    "\nDate:\t\t" + date + "\nDoc/Nurse Name:\t" + staff + "\nAppointment Time Slot:\t" + timeSlot + "\n";
+            
+            rowInfoTextArea.setText(rowInfo);
             
             idEditText.setText(id);
             if (type.equalsIgnoreCase("routine"))
@@ -875,15 +970,34 @@ public class GUI extends JFrame {
                             }
                         }
                         else if (e.getSource() == editEdit) {
-                            routineTypeEdit.setEnabled(true);
+                            /*routineTypeEdit.setEnabled(true);
                             careManagementTypeEdit.setEnabled(true);
                             patientEditText.setEditable(true);
                             dateEditText.setEditable(true);
                             staffListEdit = updateListOfStaff(staffListEdit);
-                            timesListEdit = updateListOfTimes(timesListEdit);
+                            timesListEdit = updateListOfTimes(timesListEdit);*/
+                            addAppFrame();
                         }
                         else if (e.getSource() == removeEdit) {
-                            
+                            int ans = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this appointment?", "Title", JOptionPane.YES_NO_OPTION);
+                            if (ans == JOptionPane.YES_OPTION) {
+                                int row = appTable.getSelectedRow();
+                                String id = (String) appTable.getModel().getValueAt(row, 0);
+                                String timeSlot1 = ((String) appTable.getModel().getValueAt(row, 5)).substring(0, 5);
+                                String timeSlot2 = appTable.getModel().getValueAt(row, 6).toString().substring(0, 5);
+                                String timeSlot = timeSlot1 + "-" + timeSlot2;
+                                String staff = (String) appTable.getModel().getValueAt(row, 3);
+                                String date = (String) appTable.getModel().getValueAt(row, 4);
+                                
+                                // Delete appointment from table appointments.
+                                Main.execute("DELETE FROM appointments WHERE appId = " + id + " ;");
+                                // Re-edit availability of time slot in table doctorsandnurses.
+                                Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(timeSlot) +" = 'y' WHERE name like '"+ staff +"' AND  date like '"+ date +"' ;");
+                                JOptionPane.showMessageDialog(null, "Appointment has been deleted successfully.");
+                                editAppFrame.dispose();
+                                tableModel.setFilter(new String[]{});
+                                tableModel.fireTableDataChanged();
+                            }
                         }
                         else if (e.getSource() == submitEdit) {
                             
