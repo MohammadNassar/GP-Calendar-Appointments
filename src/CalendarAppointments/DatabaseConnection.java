@@ -253,7 +253,7 @@ public class DatabaseConnection {
         try {
             statement.executeUpdate(instruction);
         } catch (SQLException s) {
-            System.out.println("Unable to get connection or create statement. ==> ("+s+")");
+            System.out.println("Unable to execute query. ==> ("+s+")");
         }
     }
     

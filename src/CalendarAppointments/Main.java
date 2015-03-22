@@ -35,7 +35,6 @@ public class Main {
         DatabaseConnection connect = new DatabaseConnection();
         
         connect.execute(instruction);
-        System.out.println(instruction);
     }
     
     public static String[][] getAppointments(String[] line) {
@@ -101,7 +100,32 @@ public class Main {
                             "(appType, patientId, appWithStaffId, date, startTime, finishTime)" + 
                             "VALUES (" + values + ") ;";
         System.out.println(update);
-        connect.addRecords(update);
+        connect.execute(update);
+    }
+    
+    public static void editAppointment(String[] array, String id) {
+        
+        DatabaseConnection connect = new DatabaseConnection();
+        
+        String[] columnName = {"appType", "patientId", "appWithStaffId", "date", "startTime", "finishTime"};
+        
+        ArrayList<String> list = new ArrayList<String>();
+        for (int i=0; i<array.length; i++) {
+            if (i != array.length-1)
+                list.add(columnName[i] + " = '" + array[i] + "', ");
+            else
+                list.add(columnName[i] + " = '" + array[i] + "'");
+        }
+        
+        String values = "";
+        for (String val : list)
+            values += val;
+        
+        String update = "UPDATE appointments " + 
+                            "SET " + values + 
+                            " WHERE appId = " + id + " ;";
+        System.out.println(update);
+        connect.execute(update);
     }
     
     // Return true if all entries are unset or empty
@@ -455,7 +479,8 @@ public class Main {
                             "(appType, patientId, appWithStaffId, date, startTime, finishTime)" + 
                             "VALUES (" + input + ") ;";
         
-        connect.addRecords(update);
+        //connect.addRecords(update);
+        connect.execute(update);
     }
     
 }
