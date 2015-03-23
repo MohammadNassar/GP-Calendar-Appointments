@@ -7,7 +7,10 @@ public class CalendarAppointments {
     
     
     public static void main(String[] args) {
-
-        System.out.println("Started !!");
+        
+        if (args == null)
+            System.out.println("No");
+        else
+            System.out.println("Started !!");
     }
 }

@@ -91,6 +91,46 @@ public class DatabaseConnection {
         return rowsInTable;
     }
     
+    // Retrieve records from the database
+    public String[][] getDaysOff(String instruction) {
+        
+        //String query = "SELECT * FROM appointments;";
+        String query = instruction;
+        String[][] rowsInTable = {{""}};
+        
+        try {
+            // Perform the query ==> (Execute the SQL statement and save the returned value in variable 'result').
+            result = statement.executeQuery(query);
+            
+            ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
+            int index = 0;
+            while (result.next()) {
+                
+                list.add(new ArrayList<String>());
+                // Concatenate results retrieved from table and print them.
+                String day = result.getString("day");
+                
+                list.get(index).add(day);
+                
+                index++;
+            }
+            
+            if (list.size() > 0) {
+                rowsInTable = new String[list.size()][list.get(0).size()];
+                for (int i=0; i<list.size(); i++) {
+                    for (int j=0; j<list.get(i).size(); j++) {
+                        rowsInTable[i][j] = list.get(i).get(j);
+                    }
+                }
+            }
+            
+        } catch (SQLException s) {
+            System.out.println("Unable to execute query. ==> ("+s+")");
+        }
+        
+        return rowsInTable;
+    }
+    
     // Retrieve ANY records from the database
     public String[] getOneColumnFromTable(String instruction) {
         

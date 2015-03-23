@@ -33,6 +33,9 @@ public class GUI extends JFrame {
 	private JLabel item1, idLabel, typeLabel, patientLabel, staffLabel, dateLabel, startTimeLabel, finishTimeLabel;
 	private JTextField idTextField, typeTextField, patientTextField, staffTextField, dateTextField, startTimeTextField, finishTimeTextField;
 	private JButton button1, searchButton, resetButton, addButton, updateButton, setHolidaysButton;
+        private JComboBox typesList;
+        private JRadioButton routineType, careManagementType, allTypes;
+        private ButtonGroup radioGroupTypes;
 	private JPanel appPanel, optionsPanel, menuPanel, mainPanel;
         private TableModel tableModel;
 	private JTable appTable;
@@ -60,6 +63,13 @@ public class GUI extends JFrame {
         
         // General
         private boolean inEditingMode;
+        
+        // Days Off and Holidays Frame
+        private JFrame daysOffFrame;
+        private JButton searchDaysOff, resetDaysOff, addDaysOff, removeDaysOff;
+        private JTextField searchDaysOffText;
+        private DaysOffTableModel daysOffTableModel;
+        private JTable daysOffTable;
         
 	public GUI() {
 		
@@ -176,7 +186,15 @@ public class GUI extends JFrame {
 		idLabel = new JLabel("ID");
 		idTextField = new JTextField(15);
 		typeLabel = new JLabel("Type");
-		typeTextField = new JTextField(15);
+		//typeTextField = new JTextField(15);
+                /*routineType = new JRadioButton("Routine", false);
+                careManagementType = new JRadioButton("Care Management", false);
+                allTypes = new JRadioButton("All", true);
+                radioGroupTypes = new ButtonGroup();
+                    radioGroupTypes.add(routineType);
+                    radioGroupTypes.add(careManagementType);
+                    radioGroupTypes.add(allTypes);*/
+                typesList = new JComboBox(new String[]{"All", "Routine", "Care Management"});
 		patientLabel = new JLabel("Patient ID");
 		patientTextField = new JTextField(15);
 		staffLabel = new JLabel("Staff ID");
@@ -200,7 +218,11 @@ public class GUI extends JFrame {
 		c.gridy = 3;
 		optionsPanel.add(typeLabel, c);
 		c.gridy = 4;
-		optionsPanel.add(typeTextField, c);
+		//optionsPanel.add(typeTextField, c);
+                /*c.gridy = 4; optionsPanel.add(routineType, c);
+                c.gridy = 4; optionsPanel.add(careManagementType, c);
+                c.gridy = 4; optionsPanel.add(allTypes, c);*/
+                optionsPanel.add(typesList, c);
 		c.gridy = 5;
 		optionsPanel.add(patientLabel, c);
 		c.gridy = 6;
@@ -258,7 +280,7 @@ public class GUI extends JFrame {
         public void addAppFrame() {
             
             appFrame.setEnabled(false);
-            editAppFrame.setEnabled(false);
+            //if (inEditingMode) editAppFrame.setEnabled(false);
             
             String frameName = (! inEditingMode) ? "Add an Appointment" : "Editing an Appointment";
             addAppFrame = new JFrame(frameName);
@@ -361,43 +383,9 @@ public class GUI extends JFrame {
             
             Listener listen = new Listener();
             
-            /*dateAddText.addFocusListener(
-                    new FocusListener(){
-                        public void focusGained(FocusEvent e) {
-                            //System.out.println("focusGained");
-                            
-                        }
-                        public void focusLost(FocusEvent e) {
-                            //updateListOfStaff();
-                            // I had to comment out the line above, as it used to re-change my chosen staff name (from the list) after and re-(gain & lose focus) from the date text field.
-                        }
-                    }
-            );*/
-            
-            /*staffListAdd.addFocusListener(
-                    new FocusListener(){
-                        public void focusGained(FocusEvent e) {
-                            //System.out.println("focusGained");
-                            
-                        }
-                        public void focusLost(FocusEvent e) {
-                            //updateListOfTimes();
-                        }
-                    }
-            );*/
-            
             routineTypeAdd.addItemListener(listen);
             careManagementTypeAdd.addItemListener(listen);
             staffListAdd.addItemListener(listen);
-            
-            /*timesListAdd.addActionListener(
-                    new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            timeSelectedAdd = (String ) timesListAdd.getSelectedItem();
-                            //JOptionPane.showMessageDialog(null, timeSelectedAdd);
-                        }
-                    }
-            );*/
             
             checkDateButton.addActionListener(listen);
             submitAdd.addActionListener(listen);
@@ -415,7 +403,7 @@ public class GUI extends JFrame {
                     if (inEditingMode)
                         inEditingMode = false;
                     appFrame.setEnabled(true);
-                    editAppFrame.setEnabled(true);
+                    if (inEditingMode) editAppFrame.setEnabled(true);
                     
                 }
             });
@@ -449,6 +437,7 @@ public class GUI extends JFrame {
             idEditText.setEditable(false);
             
             appInfoArea = new JTextArea(rowInfo);
+            appInfoArea.setEditable(false);
             
             editEditButton = new JButton("Edit");
             removeEditButton = new JButton("Remove");
@@ -493,6 +482,60 @@ public class GUI extends JFrame {
             });
         }
         
+        public void daysOffFrame() {
+            
+            appFrame.setEnabled(false);
+            
+            daysOffFrame = new JFrame("Days Off and Holidays");
+            daysOffFrame.setVisible(true);
+            daysOffFrame.setBounds(400, 200, 450, 400);
+            JPanel daysOffOptionsPanel = new JPanel();
+            JPanel daysOffMainPanel = new JPanel();
+            daysOffOptionsPanel.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            
+            searchDaysOff = new JButton("Search");
+            resetDaysOff = new JButton("Reset");
+            addDaysOff = new JButton("Add Days Off");
+            removeDaysOff = new JButton("Remove Days Off");
+            searchDaysOffText = new JTextField(15);
+            
+            daysOffTableModel = new DaysOffTableModel();
+            daysOffTable = new JTable(daysOffTableModel);
+            daysOffTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            daysOffTable.setPreferredScrollableViewportSize(new Dimension(80, 200));
+            
+            c.gridy = 1; c.gridx = 1;
+            daysOffOptionsPanel.add(searchDaysOffText, c);
+            c.gridy = 2; c.gridx = 1;
+            daysOffOptionsPanel.add(searchDaysOff, c);
+            c.gridy = 2; c.gridx = 2;
+            daysOffOptionsPanel.add(resetDaysOff, c);
+            c.gridy = 3; c.gridx = 1;
+            daysOffOptionsPanel.add(addDaysOff, c);
+            c.gridy = 3; c.gridx = 2;
+            daysOffOptionsPanel.add(removeDaysOff, c);
+            
+            JScrollPane daysOffTableScroll = new JScrollPane(daysOffTable);
+            daysOffMainPanel.add(daysOffTableScroll);
+            daysOffMainPanel.add(daysOffOptionsPanel);
+            JScrollPane daysOffScroll = new JScrollPane(daysOffMainPanel);
+            
+            daysOffFrame.add(daysOffScroll);
+            
+            Listener listen = new Listener();
+            
+            searchDaysOff.addActionListener(listen);
+            resetDaysOff.addActionListener(listen);
+            addDaysOff.addActionListener(listen);
+            removeDaysOff.addActionListener(listen);
+            
+            daysOffFrame.addWindowListener( new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {
+                    appFrame.setEnabled(true);
+                }
+            });
+        }
         public void updateListOfStaff() {
             
             //System.out.println("focusLost");
@@ -693,7 +736,9 @@ public class GUI extends JFrame {
                             //String textId, textType, textpatient, textStaff, textDate, textStartTime, textFinishTime;
                             String[] values = new String[7];
                             values[0] = idTextField.getText();
-                            values[1] = typeTextField.getText();
+                            //values[1] = typeTextField.getText();
+                            //values[1] = (routineType.isSelected()) ? routineType.getActionCommand() : (careManagementType.isSelected()) ? careManagementType.getActionCommand() : "";
+                            values[1] = (typesList.getSelectedItem().toString().equals("All")) ? "" : typesList.getSelectedItem().toString();
                             values[2] = patientTextField.getText();
                             values[3] = staffTextField.getText();
                             values[4] = dateTextField.getText();
@@ -707,7 +752,11 @@ public class GUI extends JFrame {
                         else if (e.getSource() == resetButton) {
                             
                             idTextField.setText("");
-                            typeTextField.setText("");
+                            //typeTextField.setText("");
+                            typesList.removeAllItems();
+                            String[] typesListOptions = {"All", "Routine", "Care Management"};
+                            for (String val : typesListOptions)
+                                typesList.addItem(val);
                             patientTextField.setText("");
                             staffTextField.setText("");
                             dateTextField.setText("");
@@ -723,7 +772,6 @@ public class GUI extends JFrame {
                         }
                         else if (e.getSource() == updateButton) {
                             
-                            //System.out.println(appTable.getSelectedRow());
                             if (appTable.getSelectedRow() > -1)
                                 editAppFrame();
                             else
@@ -731,7 +779,7 @@ public class GUI extends JFrame {
                         }
                         else if (e.getSource() == setHolidaysButton) {
                             
-                            //editAppFrame();
+                            daysOffFrame();
                         }
                         
                         // addAppFrame actions listener
@@ -872,11 +920,52 @@ public class GUI extends JFrame {
                         }
                         
                         // setHolidaysFrame actions listener
-                        if (e.getSource() == null) {
+                        if (e.getSource() == searchDaysOff) {
                             
+                            String[] array = {searchDaysOffText.getText().toString()};
+                            daysOffTableModel.setFilter(array);
+                            daysOffTableModel.fireTableDataChanged();
                         }
-                        else if (e.getSource() == null) {
+                        else if (e.getSource() == resetDaysOff) {
                             
+                            searchDaysOffText.setText("");
+                            daysOffTableModel.setFilter(new String[]{});
+                            daysOffTableModel.fireTableDataChanged();
+                        }
+                        else if (e.getSource() == addDaysOff) {
+                            
+                            String date = JOptionPane.showInputDialog("Please enter a date...");
+                            if (! date.equals("")) {
+                                if (Main.dateIsInCorrectFormat(date)) {
+                                    if (Main.recordExists("SELECT * FROM gpdaysoff WHERE day LIKE '" + date + "'; "))
+                                        JOptionPane.showMessageDialog(null, "This day already exists, please try again.");
+                                    else {
+                                        Main.execute("INSERT INTO gpdaysoff (day) VALUES ('" + date + "') ;");
+                                        daysOffTableModel.setFilter(new String[]{});
+                                        daysOffTableModel.fireTableDataChanged();
+                                    }
+                                }
+                                else {
+                                    JOptionPane.showMessageDialog(null, "Please enter date in this format:\nyyyy-mm-dd");
+                                }
+                            }
+                        }
+                        else if (e.getSource() == removeDaysOff) {
+                            
+                            if(daysOffTable.getSelectedRow() < 0)
+                                JOptionPane.showMessageDialog(null, "Please select a day from the table first !!");
+                            else {
+                                int ans = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this appointment?", "Title", JOptionPane.YES_NO_OPTION);
+                                if (ans == JOptionPane.YES_OPTION) {
+                                    int row = daysOffTable.getSelectedRow();
+                                    String day = (String) daysOffTable.getModel().getValueAt(row, 0);
+                                    // Delete appointment from table appointments.
+                                    Main.execute("DELETE FROM gpdaysoff WHERE day = '" + day + "' ;");
+                                    JOptionPane.showMessageDialog(null, "Appointment has been deleted successfully.");
+                                    daysOffTableModel.setFilter(new String[]{});
+                                    daysOffTableModel.fireTableDataChanged();
+                                }
+                            }
                         }
 		}
                 

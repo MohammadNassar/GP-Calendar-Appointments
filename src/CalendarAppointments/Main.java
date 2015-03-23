@@ -18,7 +18,7 @@ public class Main {
         //gpIsOpenOn("2014-02-12");
         //getDayOfWeek("2014-01-12");
         //String[] timesAvailable = getTimeSlotsAvailable("mohammad"); for(String val : timesAvailable)System.out.println(val);
-        //getCurrentDate();
+        //System.out.println(getCurrentDate());
         //System.out.println(dateIsInThePast("2014-02-13"));
         //removeTokens("2014-0/2: 13");
         //String[] arr = {};
@@ -28,12 +28,15 @@ public class Main {
         //System.out.println(getColumnNameForTimeSlot("13:00-13:15"));
         //String[] arr = {"one", "two", "three"};
         //addAppointment(arr);
+        //System.out.println(isLeapYear("2014-02-29"));
+        //System.out.println(isValidDateInCommonYear("2014-02-29"));
+        //System.out.println(gpIsOpenOn("2014-02-29"));
     }
     
     public static void execute (String instruction) { // This method can be used for SQL queries that do not return a value, e.g. INSERT, UPDATE and REMOVE.
         
         DatabaseConnection connect = new DatabaseConnection();
-        
+        System.out.println(instruction);
         connect.execute(instruction);
     }
     
@@ -77,6 +80,48 @@ public class Main {
         query += ";";
         System.out.println(query);
         String[][] table = connect.getRecords(query);
+        return table;
+    }
+    
+    public static String[][] getDaysOff(String[] line) {
+        
+        DatabaseConnection connect = new DatabaseConnection();
+        
+        String query = "SELECT * FROM gpdaysoff ";
+        boolean condition = false; // Initially assume that some properties have been set.
+        
+        
+        for (int i=0; i<line.length; i++)
+            line[i] = line[i].trim();
+        
+        if (! allUnset(line))
+            condition = true;
+        
+        if (condition) {
+            
+            ArrayList<String> allConditions = new ArrayList<String>();
+            
+            String[] columnNames = {"day "};
+            for (int i=0; i<line.length; i++) {
+                if ( ! line[i].equals("") )
+                    allConditions.add(columnNames[i] + "= '" + line[i] + "' ");
+            }
+            
+            for (int i=0; i<allConditions.size(); i++) {
+                if (i != allConditions.size()-1)
+                    allConditions.set(i, allConditions.get(i) + "AND ");
+            }
+            
+            query += "WHERE ";
+            for (String tmp : allConditions)
+                query += tmp;
+            
+        }
+        
+        query += "ORDER BY day ";
+        query += ";";
+        System.out.println(query);
+        String[][] table = connect.getDaysOff(query);
         return table;
     }
     
@@ -179,6 +224,8 @@ public class Main {
             return false;
         // Checking whether the date is in the future or in the past
         if (dateIsInThePast(date))
+            return false;
+        if (!isValidDateInCommonYear(date))
             return false;
         //System.out.println(true);
         return true;
@@ -315,6 +362,24 @@ public class Main {
         return dateAsStr;
     }
     
+    public static boolean isValidDateInCommonYear(String dateStr) {
+        
+        int month = Integer.parseInt(dateStr.substring(5, 7));
+        int day = Integer.parseInt(dateStr.substring(8, 10));
+        //System.out.println(month + "-" + day);
+        if (!isLeapYear(dateStr) && month == 02 && day == 29)
+            return false;
+        return true;
+    }
+    
+    public static boolean isLeapYear(String dateStr) {
+        
+        double year = Double.parseDouble(dateStr.substring(0, 4));
+        //System.out.println(year);
+        double res = year / 4;
+        return isInt(year);
+    }
+    
     public static boolean dateIsInThePast(String dateStr) {
         
         dateStr = removeTokens(dateStr);
@@ -362,6 +427,15 @@ public class Main {
     public static boolean isNumber(char ch) {
         
         if (Character.isDigit(ch))
+            return true;
+        return false;
+    }
+    
+    private static boolean isInt(double num) {
+        
+        //if ( num == Math.floor(num) && !Double.isInfinite(num))
+        //System.out.println((num / 4) + "\n" + (int)(num / 4));
+        if ((num / 4) == (int) (num / 4))
             return true;
         return false;
     }
