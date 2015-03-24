@@ -31,6 +31,16 @@ public class Main {
         //System.out.println(isLeapYear("2014-02-29"));
         //System.out.println(isValidDateInCommonYear("2014-02-29"));
         //System.out.println(gpIsOpenOn("2014-02-29"));
+        //String[] daysFor = getDaysForYearAndMonth("2014", "12"); for (String day : daysFor) System.out.println(day);
+        //System.out.println(getCurrentYear());
+        //System.out.println(getCurrentMonth());
+        //System.out.println(getCurrentDay());
+        //System.out.println(getCurrentDayOfWeek());
+        //String[] allHours = getAllHours(); for (String hours : allHours) System.out.println(hours);
+        //String[] allDays = getAllDays("2014", "01"); for (String day : allDays) System.out.println(day);
+        //String[] allDaysOptions = getAllDays(); for (String day : allDaysOptions) System.out.println(day);
+        //String[] allMonths = getAllMonths(); for (String month : allMonths) System.out.println(month);
+        //String[] allYears = getAllYears(); for (String year : allYears) System.out.println(year);
     }
     
     public static void execute (String instruction) { // This method can be used for SQL queries that do not return a value, e.g. INSERT, UPDATE and REMOVE.
@@ -62,7 +72,7 @@ public class Main {
             String[] columnNames = {"appId ", "appType ", "patientId ", "appWithStaffId ", "date ", "startTime ", "finishTime "};
             for (int i=0; i<line.length; i++) {
                 if ( ! line[i].equals("") )
-                    allConditions.add(columnNames[i] + "= '" + line[i] + "' ");
+                    allConditions.add(columnNames[i] + "LIKE '" + line[i] + "' ");
             }
             
             for (int i=0; i<allConditions.size(); i++) {
@@ -104,7 +114,7 @@ public class Main {
             String[] columnNames = {"day "};
             for (int i=0; i<line.length; i++) {
                 if ( ! line[i].equals("") )
-                    allConditions.add(columnNames[i] + "= '" + line[i] + "' ");
+                    allConditions.add(columnNames[i] + "LIKE '" + line[i] + "' ");
             }
             
             for (int i=0; i<allConditions.size(); i++) {
@@ -274,6 +284,51 @@ public class Main {
         return timeSlots;
     }
     
+    public static String[] getAllHours() {
+        
+        String[] hours = {"All", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00", "12:00 - 13:00", 
+                          "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00", "17:00 - 17.30"
+        };
+        return hours;
+    }
+    
+    
+    public static String[] getAllDays() {
+        
+        String[] daysArr = {"All", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", 
+                            "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", 
+                            "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"
+        };
+        return daysArr;
+    }
+    
+    
+    public static String[] getAllDays(String yearStr, String monthStr) {
+        
+        String[] allDays = getDaysForYearAndMonth(yearStr, monthStr);
+        String[] allDaysOptions = new String[allDays.length + 1];
+        allDaysOptions[0] = "All";
+        System.arraycopy(allDays, 0, allDaysOptions, 1, allDays.length);
+        
+        return allDaysOptions;
+    }
+    
+    public static String[] getAllMonths() {
+        
+        String[] allMonths = {"All", "01", "02", "03", "04", "05", "06", 
+                              "07", "08", "09", "10", "11", "12"
+        };
+        return allMonths;
+    }
+    
+    public static String[] getAllYears() {
+        
+        String[] allYears = {"All", "2013", "2014", "2015", "2016", 
+                             "2017", "2018", "2019", "2020"
+        };
+        return allYears;
+    }
+    
     public static String[] getTimeSlotsAvailable(String docOrNurse, String date) {
         
         DatabaseConnection connect = new DatabaseConnection();
@@ -362,6 +417,36 @@ public class Main {
         return dateAsStr;
     }
     
+    public static String getCurrentYear() {
+        
+        return (getCurrentDate().substring(0, 4));
+    }
+    
+    public static String getCurrentMonth() {
+        
+        return (getCurrentDate().substring(5, 7));
+    }
+    
+    public static String getCurrentDay() {
+        
+        return (getCurrentDate().substring(8, 10));
+    }
+    
+    public static String getCurrentDayOfWeek() {
+        
+        String[] weekDays = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", };
+        
+        switch (getDayOfWeek(getCurrentDate())) {
+            case 1 : return weekDays[0];
+            case 2 : return weekDays[1];
+            case 3 : return weekDays[2];
+            case 4 : return weekDays[3];
+            case 5 : return weekDays[4];
+            case 6 : return weekDays[5];
+            default : return weekDays[6];
+        }
+    }
+    
     public static boolean isValidDateInCommonYear(String dateStr) {
         
         int month = Integer.parseInt(dateStr.substring(5, 7));
@@ -413,6 +498,34 @@ public class Main {
             }
         }
         return false;
+    }
+    
+    public static String[] getDaysForYearAndMonth(String yearStr, String monthStr) {
+        
+        String[] daysToReturn;
+        int arraySize;
+        String[] daysArr = {"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", 
+                         "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", 
+                         "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"
+        };
+        int year = Integer.parseInt(yearStr.substring(0, 4));
+        int month = Integer.parseInt(monthStr.substring(0, 2));
+        
+        if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12)
+            arraySize = 31;
+        else if (month == 4 || month == 6 || month == 9 || month == 11)
+            arraySize = 30;
+        else {
+            if (isLeapYear(yearStr))
+                arraySize = 29;
+            else
+                arraySize = 28;
+        }
+        
+        daysToReturn = new String[arraySize];
+        for (int i = 0; i < arraySize; i++)
+            daysToReturn[i] = daysArr[i];
+        return daysToReturn;
     }
     
     public static boolean isNumber(String str) {
@@ -515,7 +628,7 @@ public class Main {
             String[] columnNames = {"appId ", "appType ", "patientId ", "appWithStaffId ", "date ", "startTime ", "finishTime "};
             for (int i=0; i<line.length; i++) {
                 if ( ! line[i].equals("") )
-                    allConditions.add(columnNames[i] + "= '" + line[i] + "' ");
+                    allConditions.add(columnNames[i] + "LIKE '" + line[i] + "' ");
             }
             
             for (int i=0; i<allConditions.size(); i++) {
