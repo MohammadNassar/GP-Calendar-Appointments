@@ -46,11 +46,11 @@ public class GUI extends JFrame {
 	
         // addAppFrame items
         private JFrame addAppFrame;
-        private JLabel idAddLabel, typeAddLabel, patientAddLabel, staffAddLabel, dateAddLabel, startTimeAddLabel, finishTimeAddLabel, appTimeAddLabel;
+        private JLabel idAddLabel, typeAddLabel, patientAddLabel, staffAddLabel, dateAddLabel, startTimeAddLabel, finishTimeAddLabel, durationAddLabel, appTimeAddLabel;
         private JRadioButton routineTypeAdd, careManagementTypeAdd;
         private ButtonGroup radioGroupAdd;
         private JTextField idAddText, typeAddText, patientAddText, staffAddText, dateAddText, startTimeAddText, finishTimeAddText;
-        private JComboBox staffListAdd, timesListAdd;
+        private JComboBox staffListAdd, durationsListAdd, timesListAdd;
         private JButton checkDateButton, submitAdd, resetAdd, cancelAdd;
         private String timeSelectedAdd, dateLookedAt, typeChosenAdd = "", oldTimeSlot, oldStaff, oldDate, id;
         
@@ -322,6 +322,7 @@ public class GUI extends JFrame {
             staffAddLabel = new JLabel("Staff");
             //startTimeAddLabel = new JLabel("Start Time");
             //finishTimeAddLabel = new JLabel("Finish Time");
+            durationAddLabel = new JLabel("Duration");
             appTimeAddLabel = new JLabel("Choose Time Slot");
             
             
@@ -342,6 +343,8 @@ public class GUI extends JFrame {
             String[] arr = {"Add & Check Date First"};
             staffListAdd = new JComboBox(arr);
             staffListAdd.setEnabled(false);
+            
+            durationsListAdd = new JComboBox(Main.getAllDurations());
             
             String[] timeSlotsAvailableArray = {"Add & Check Date First"};
             timesListAdd = new JComboBox(timeSlotsAvailableArray);
@@ -393,12 +396,16 @@ public class GUI extends JFrame {
             c.gridy = 17;
             addAppPanel.add(staffListAdd, c);
             c.gridy = 18;
-            addAppPanel.add(appTimeAddLabel, c);
+            addAppPanel.add(durationAddLabel, c);
             c.gridy = 19;
-            addAppPanel.add(timesListAdd, c);
+            addAppPanel.add(durationsListAdd, c);
             c.gridy = 20;
-            addAppPanel.add(submitAdd, c);
+            addAppPanel.add(appTimeAddLabel, c);
             c.gridy = 21;
+            addAppPanel.add(timesListAdd, c);
+            c.gridy = 22;
+            addAppPanel.add(submitAdd, c);
+            c.gridy = 23;
             addAppPanel.add(resetAdd, c);
             //c.gridy = 22;
             //addAppPanel.add(cancelAdd, c);
@@ -411,6 +418,15 @@ public class GUI extends JFrame {
             routineTypeAdd.addItemListener(listen);
             careManagementTypeAdd.addItemListener(listen);
             staffListAdd.addItemListener(listen);
+            //durationsListAdd.addItemListener(listen);
+            durationsListAdd.addItemListener( new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                    if (e.getStateChange() == ItemEvent.SELECTED) {
+                        // If duration is changedthen update timeslots.
+                        updateListOfTimes();
+                    }
+                }
+            });
             
             checkDateButton.addActionListener(listen);
             submitAdd.addActionListener(listen);
@@ -591,9 +607,9 @@ public class GUI extends JFrame {
             
             if (! dateAddText.getText().equals("")) {
                 if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name LIKE '"+staffListAdd.getSelectedItem()+"' ;"))
-                    timesOptions = Main.getTimeSlotsAvailable((String)staffListAdd.getSelectedItem(), dateLookedAt);
+                    timesOptions = Main.getTimeSlotsAvailable((String)staffListAdd.getSelectedItem(), dateLookedAt, durationsListAdd.getSelectedItem().toString());
                 else
-                    timesOptions = Main.getAllTimeSlots();
+                    timesOptions = Main.getAllTimeSlotsForDuration(durationsListAdd.getSelectedItem().toString(), dateAddText.getText());
                 timesListAdd.setEnabled(true);
                 
                 for (String val : timesOptions)
@@ -603,6 +619,20 @@ public class GUI extends JFrame {
                 String[] options = {"Add & Check Date First"};
                 timesListAdd.addItem(options[0]);
                 timesListAdd.setEnabled(false);
+            }
+        }
+        
+        public void updateListOfDurations() {
+            
+            durationsListAdd.removeAllItems();
+            String[] allDurations = Main.getAllDurations();
+            if (typeChosenAdd.equals("Routine")) {
+                durationsListAdd.addItem(allDurations[0]);
+                //durationsListAdd.setSelectedIndex(0);
+            }
+            else {
+                for (String val : allDurations)
+                    durationsListAdd.addItem(val);
             }
         }
         
@@ -637,9 +667,9 @@ public class GUI extends JFrame {
             
             if (! dateEditText.getText().equals("")) {
                 if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateEditText.getText()+"' AND  name LIKE '"+staffListEdit.getSelectedItem()+"' ;"))
-                    timesOptions = Main.getTimeSlotsAvailable((String)staffListEdit.getSelectedItem(), dateEditText.getText());
+                    timesOptions = Main.getTimeSlotsAvailable((String)staffListAdd.getSelectedItem(), dateLookedAt, durationsListAdd.getSelectedItem().toString());
                 else
-                    timesOptions = Main.getAllTimeSlots();
+                    timesOptions = Main.getAllTimeSlotsForDuration(durationsListAdd.getSelectedItem().toString());
                 list.setEnabled(true);
                 
                 for (String val : timesOptions)
@@ -888,12 +918,15 @@ public class GUI extends JFrame {
 
                                     // Update availability timeslots
                                     if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name LIKE '"+staffListAdd.getSelectedItem()+"' ;")) {
-                                        Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +" = 'n' WHERE name = '"+ staffListAdd.getSelectedItem().toString() +"' AND date = '"+ dateAddText.getText() +"' ;");
+                                        //Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +" = 'n' WHERE name = '"+ staffListAdd.getSelectedItem().toString() +"' AND date = '"+ dateAddText.getText() +"' ;");
+                                        Main.setAvailability(false, timesListAdd.getSelectedItem().toString(), staffListAdd.getSelectedItem().toString(), dateAddText.getText());
                                     }
                                     else {
-                                        Main.execute("INSERT INTO doctorsandnurses (name, date, "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +") VALUES ('"+ staffListAdd.getSelectedItem().toString() +"', '"+ dateAddText.getText() +"', '"+ "n" +"') ;");
+                                        //Main.execute("INSERT INTO doctorsandnurses (name, date, "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +") VALUES ('"+ staffListAdd.getSelectedItem().toString() +"', '"+ dateAddText.getText() +"', '"+ "n" +"') ;");
+                                        Main.createAvailability(timesListAdd.getSelectedItem().toString(), staffListAdd.getSelectedItem().toString(), dateAddText.getText());
                                     }
                                     JOptionPane.showConfirmDialog(null, "Appointment has been recorded successfully.", "Complete", JOptionPane.CLOSED_OPTION);
+                                    addAppFrame.setVisible(false);
                                 }
                                 else { // Then it is in EDITING mode
                                     // Edit an existing appointment, which is identified by its ID.
@@ -909,17 +942,18 @@ public class GUI extends JFrame {
                                     Main.editAppointment(array, id);
 
                                     // Update availability timeslots accordingly
-                                    Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(oldTimeSlot) +" = 'y' WHERE name = '"+ oldStaff +"' AND date = '"+ oldDate +"' ;");
-                                    Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +" = 'n' WHERE name = '"+ staffListAdd.getSelectedItem().toString() +"' AND date = '"+ dateAddText.getText() +"' ;");
+                                    //Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(oldTimeSlot) +" = 'y' WHERE name = '"+ oldStaff +"' AND date = '"+ oldDate +"' ;");
+                                    Main.setAvailability(true, oldTimeSlot, oldStaff, oldDate);
+                                    //Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +" = 'n' WHERE name = '"+ staffListAdd.getSelectedItem().toString() +"' AND date = '"+ dateAddText.getText() +"' ;");
+                                    Main.setAvailability(false, timesListAdd.getSelectedItem().toString(), staffListAdd.getSelectedItem().toString(), dateAddText.getText());
                                     
                                     JOptionPane.showConfirmDialog(null, "Appointment has been recorded successfully.", "Complete", JOptionPane.CLOSED_OPTION);
+                                    editAppFrame.dispose();
+                                    //editAppFrame.setEnabled(true);
                                     inEditingMode = false;
                                 }
                                 
-                                addAppFrame.setVisible(false);
                                 appFrame.setEnabled(true);
-                                editAppFrame.dispose();
-                                //editAppFrame.setEnabled(true);
                                 tableModel.setFilter(new String[]{});
                                 tableModel.fireTableDataChanged();
                             }
@@ -957,7 +991,8 @@ public class GUI extends JFrame {
                                 // Delete appointment from table appointments.
                                 Main.execute("DELETE FROM appointments WHERE appId = " + id + " ;");
                                 // Re-edit availability of time slot in table doctorsandnurses.
-                                Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(timeSlot) +" = 'y' WHERE name like '"+ staff +"' AND  date like '"+ date +"' ;");
+                                //Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(timeSlot) +" = 'y' WHERE name like '"+ staff +"' AND  date like '"+ date +"' ;");
+                                Main.setAvailability(true, timeSlot, staff, date);
                                 JOptionPane.showMessageDialog(null, "Appointment has been deleted successfully.");
                                 editAppFrame.dispose();
                                 appFrame.setEnabled(true);
@@ -1021,15 +1056,17 @@ public class GUI extends JFrame {
                     if (routineTypeAdd.isSelected()) {
                         //JOptionPane.showMessageDialog(null, "Routine is selected");
                         typeChosenAdd = "Routine";
+                        updateListOfDurations();
                         //typeChosenEdit = "Routine";
                     }
                     else if (careManagementTypeAdd.isSelected()) {
                         //JOptionPane.showMessageDialog(null, "Care Management is selected");
                         typeChosenAdd = "Care Management";
+                        updateListOfDurations();
                         //typeChosenEdit = "Care Management";
                     }
                     
-                    if (e.getStateChange() == ItemEvent.SELECTED) { // If a staff is selected from the staff list.
+                    if (e.getStateChange() == ItemEvent.SELECTED) { // If a staff and/or duration is selected from the staff list and/or duration list.
                         //JOptionPane.showMessageDialog(null, "Selected Here");
                         updateListOfTimes();
                         //timesListEdit = updateListOfTimes(timesListEdit);

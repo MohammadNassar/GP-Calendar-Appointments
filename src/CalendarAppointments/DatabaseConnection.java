@@ -281,6 +281,7 @@ public class DatabaseConnection {
     // Add a record into the database
     public void addRecords(String instruction) {
         
+        System.out.println(instruction);
         try {
             statement.executeUpdate(instruction);
         } catch (SQLException s) {
@@ -290,6 +291,7 @@ public class DatabaseConnection {
     
     public void execute(String instruction) {
         
+        System.out.println(instruction);
         try {
             statement.executeUpdate(instruction);
         } catch (SQLException s) {

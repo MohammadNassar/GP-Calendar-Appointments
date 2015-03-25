@@ -41,6 +41,10 @@ public class Main {
         //String[] allDaysOptions = getAllDays(); for (String day : allDaysOptions) System.out.println(day);
         //String[] allMonths = getAllMonths(); for (String month : allMonths) System.out.println(month);
         //String[] allYears = getAllYears(); for (String year : allYears) System.out.println(year);
+        //String[] columnNames = getColumnNamesForTimeSlot("09:00-09:45"); for (String colName : columnNames) System.out.println(colName);
+        //setAvailability(true, "09:30-10:15", "mohammad", "2014-05-02");
+        //createAvailability("09:30-10:00", "mohammad", "2014-04-10");
+        String[] timeSlots = getAllTimeSlots("2014-03-01"); for (String time : timeSlots) System.out.println(time);
     }
     
     public static void execute (String instruction) { // This method can be used for SQL queries that do not return a value, e.g. INSERT, UPDATE and REMOVE.
@@ -152,9 +156,9 @@ public class Main {
             values += val;
         
         String update = "INSERT INTO appointments " + 
-                            "(appType, patientId, appWithStaffId, date, startTime, finishTime)" + 
+                            "(appType, patientId, appWithStaffId, date, startTime, finishTime) " + 
                             "VALUES (" + values + ") ;";
-        System.out.println(update);
+        //System.out.println(update);
         connect.execute(update);
     }
     
@@ -246,19 +250,83 @@ public class Main {
         return timeSlots;
     }
     
-    public static String getColumnNameForTimeSlot(String timeSlot) {
-        String[] timeSlots = {"09:00-09:15", "09:15-09:30", "09:30-09:45", "09:45-10:00",
-                              "10:00-10:15", "10:15-10:30", "10:30-10:45", "10:45-11:00",
-                              "11:00-11:15", "11:15-11:30", "11:30-11:45", "11:45-12:00",
-                              "12:00-12:15", "12:15-12:30", "12:30-12:45", "12:45-13:00",
-                              "13:00-13:15", "13:15-13:30", "13:30-13:45", "13:45-14:00",
-                              "14:00-14:15", "14:15-14:30", "14:30-14:45", "14:45-15:00",
-                              "15:00-15:15", "15:15-15:30", "15:30-15:45", "15:45-16:00",
-                              "16:00-16:15", "16:15-16:30", "16:30-16:45", "16:45-17:00",
-                              "17:00-17:15", "17:15-17:30"
-        };
+    public static String[] getAllColumnNamesForTimeSlots() {
+        
         String[] columnNames = {"a9","b9","c9","d9","a10","b10","c10","d10","a11","b11","c11","d11","a12","b12","c12","d12",
                               "a13","b13","c13","d13","a14","b14","c14","d14","a15","b15","c15","d15","a16","b16","c16","d16","a17","b17"};
+        return columnNames;
+    }
+    
+    public static String[] getColumnNamesForTimeSlot(String timeSlot) {
+        String[] timeSlots = timeSlot.split("-");
+        String start = timeSlots[0];
+        String finish = timeSlots[1];
+        String[] allStartTimes = getAllStartTimes();
+        String[] allFinishTimes = getAllFinishTimes();
+        String[] columnNames = getAllColumnNamesForTimeSlots();
+        
+        int startIndex = 0, finishIndex = 0;
+        for (int i=0; i<allStartTimes.length; i++) {
+            if (start.equals(allStartTimes[i]))
+                startIndex = i;
+            if (finish.equals(allFinishTimes[i]))
+                finishIndex = i;
+        }
+        
+        String[] columnNamesToReturn = new String[(finishIndex - startIndex) + 1];
+        for (int i = 0, index = startIndex; index<=finishIndex; i++, index++) {
+            columnNamesToReturn[i] = columnNames[index];
+        }
+        
+        return columnNamesToReturn;
+    }
+    
+    public static void setAvailability(boolean availableOrNot, String timeSlot, String docOrNurse, String date) {
+        
+        DatabaseConnection connect = new DatabaseConnection();
+        String availability = (availableOrNot)? "'y' " : "'n' ";
+        String query = "UPDATE doctorsandnurses SET ";
+        String[] columnNames = getColumnNamesForTimeSlot(timeSlot);
+        for (int i=0; i<columnNames.length; i++) {
+            if (i != columnNames.length-1) // If NOT at the last index or element in the array.
+                query += columnNames[i] + " = " + availability + ", ";
+            else
+                query += columnNames[i] + " = " + availability;
+        }
+        query += "WHERE name LIKE '" + docOrNurse + "' AND date LIKE '" + date + "' ;";
+        //System.out.println(query);
+        connect.execute(query);
+    }
+    
+    public static void createAvailability(String timeSlot, String docOrNurse, String date) {
+        
+        DatabaseConnection connect = new DatabaseConnection();
+        String availability = " 'n'";
+        String query = "INSERT INTO doctorsandnurses (name, date, ";
+        String[] columnNames = getColumnNamesForTimeSlot(timeSlot);
+        for (int i=0; i<columnNames.length; i++) {
+            if (i != columnNames.length-1) // If NOT at the last index or element in the array.
+                query += columnNames[i] + ", ";
+            else
+                query += columnNames[i];
+        }
+        query += ") VALUES ('";
+        query += docOrNurse + "', '" + date +"',";
+        for (int i=0; i<columnNames.length; i++) {
+            if (i != columnNames.length-1) // If NOT at the last index or element in the array.
+                query += availability + ",";
+            else
+                query += availability;
+        }
+        
+        query += ");";
+        //System.out.println(query);
+        connect.execute(query);
+    }
+    
+    public static String getColumnNameForTimeSlot(String timeSlot) { // OLD
+        String[] timeSlots = getAllTimeSlots();
+        String[] columnNames = getAllColumnNamesForTimeSlots();
         
         String columnName = "";
         for (int i=0; i<timeSlots.length; i++) {
@@ -270,18 +338,100 @@ public class Main {
         return columnName;
     }
     
+    public static String[] getAllStartTimes() {
+        
+        String[] startTimes = { "09:00", "09:15", "09:30", "09:45",
+                                "10:00", "10:15", "10:30", "10:45",
+                                "11:00", "11:15", "11:30", "11:45",
+                                "12:00", "12:15", "12:30", "12:45",
+                                "13:00", "13:15", "13:30", "13:45",
+                                "14:00", "14:15", "14:30", "14:45",
+                                "15:00", "15:15", "15:30", "15:45",
+                                "16:00", "16:15", "16:30", "16:45",
+                                "17:00", "17:15"
+        };
+        return startTimes;
+    }
+    
+    public static String[] getAllFinishTimes() {
+        
+        String[] startTimes = { "09:15", "09:30", "09:45", "10:00", 
+                                "10:15", "10:30", "10:45", "11:00", 
+                                "11:15", "11:30", "11:45", "12:00", 
+                                "12:15", "12:30", "12:45", "13:00", 
+                                "13:15", "13:30", "13:45", "14:00", 
+                                "14:15", "14:30", "14:45", "15:00", 
+                                "15:15", "15:30", "15:45", "16:00", 
+                                "16:15", "16:30", "16:45", "17:00", 
+                                "17:15", "17:30"
+        };
+        return startTimes;
+    }
+    
+    public static String[] getAllTimeSlotsForDuration(String durationStr, String date) {
+        
+        int duration = Integer.parseInt(durationStr.substring(0, 2));
+        String[] timeSlotsToReturn = new String[0];
+        String[] startTimes = getAllStartTimes();
+        String[] finishTimes = getAllFinishTimes();
+        
+        if (duration == 15) {
+            timeSlotsToReturn = new String[getAllTimeSlots(date).length];
+            for (int i=0; i<timeSlotsToReturn.length; i++) {
+                timeSlotsToReturn[i] = startTimes[i] + "-" + finishTimes[i];
+            }
+        }
+        else if (duration == 30) {
+            timeSlotsToReturn = new String[getAllTimeSlots(date).length-1];
+            for (int i=0; i<timeSlotsToReturn.length; i++) {
+                timeSlotsToReturn[i] = startTimes[i] + "-" + finishTimes[i+1];
+            }
+        }
+        else if (duration == 45) {
+            timeSlotsToReturn = new String[getAllTimeSlots(date).length-2];
+            for (int i=0; i<timeSlotsToReturn.length; i++) {
+                timeSlotsToReturn[i] = startTimes[i] + "-" + finishTimes[i+2];
+            }
+        }
+        else if (duration == 60) {
+            timeSlotsToReturn = new String[getAllTimeSlots(date).length-3];
+            for (int i=0; i<timeSlotsToReturn.length; i++) {
+                timeSlotsToReturn[i] = startTimes[i] + "-" + finishTimes[i+3];
+            }
+        }
+        
+        return timeSlotsToReturn;
+    }
+    
     public static String[] getAllTimeSlots() {
         String[] timeSlots = {"09:00-09:15", "09:15-09:30", "09:30-09:45", "09:45-10:00",
-                                     "10:00-10:15", "10:15-10:30", "10:30-10:45", "10:45-11:00",
-                                     "11:00-11:15", "11:15-11:30", "11:30-11:45", "11:45-12:00",
-                                     "12:00-12:15", "12:15-12:30", "12:30-12:45", "12:45-13:00",
-                                     "13:00-13:15", "13:15-13:30", "13:30-13:45", "13:45-14:00",
-                                     "14:00-14:15", "14:15-14:30", "14:30-14:45", "14:45-15:00",
-                                     "15:00-15:15", "15:15-15:30", "15:30-15:45", "15:45-16:00",
-                                     "16:00-16:15", "16:15-16:30", "16:30-16:45", "16:45-17:00",
-                                     "17:00-17:15", "17:15-17:30"
+                                "10:00-10:15", "10:15-10:30", "10:30-10:45", "10:45-11:00",
+                                "11:00-11:15", "11:15-11:30", "11:30-11:45", "11:45-12:00",
+                                "12:00-12:15", "12:15-12:30", "12:30-12:45", "12:45-13:00",
+                                "13:00-13:15", "13:15-13:30", "13:30-13:45", "13:45-14:00",
+                                "14:00-14:15", "14:15-14:30", "14:30-14:45", "14:45-15:00",
+                                "15:00-15:15", "15:15-15:30", "15:30-15:45", "15:45-16:00",
+                                "16:00-16:15", "16:15-16:30", "16:30-16:45", "16:45-17:00",
+                                "17:00-17:15", "17:15-17:30"
         };
         return timeSlots;
+    }
+    
+    public static String[] getAllTimeSlots(String date) {
+        
+        String[] timeSlots = getAllTimeSlots();
+        if (getDayOfWeek(date) == 7) { // Then day is a saturday, so only return timeslots from 09:00 to 12:00
+            String[] saturdayTimeSlots = new String[12];
+            System.arraycopy(timeSlots, 0, saturdayTimeSlots, 0, 12);
+            return saturdayTimeSlots;
+        }
+        return timeSlots;
+    }
+    
+    public static String[] getAllDurations() {
+        
+        String[] durations = {"15 Minutes", "30 Minutes", "45 Minutes", "60 Minutes"};
+        return durations;
     }
     
     public static String[] getAllHours() {
@@ -291,7 +441,6 @@ public class Main {
         };
         return hours;
     }
-    
     
     public static String[] getAllDays() {
         
@@ -329,20 +478,59 @@ public class Main {
         return allYears;
     }
     
-    public static String[] getTimeSlotsAvailable(String docOrNurse, String date) {
+    public static String[] getTimeSlotsAvailable(String docOrNurse, String date, String duration) {
         
         DatabaseConnection connect = new DatabaseConnection();
         
-        String[] timeSlotsOptions = {"09:00-09:15", "09:15-09:30", "09:30-09:45", "09:45-10:00",
-                                     "10:00-10:15", "10:15-10:30", "10:30-10:45", "10:45-11:00",
-                                     "11:00-11:15", "11:15-11:30", "11:30-11:45", "11:45-12:00",
-                                     "12:00-12:15", "12:15-12:30", "12:30-12:45", "12:45-13:00",
-                                     "13:00-13:15", "13:15-13:30", "13:30-13:45", "13:45-14:00",
-                                     "14:00-14:15", "14:15-14:30", "14:30-14:45", "14:45-15:00",
-                                     "15:00-15:15", "15:15-15:30", "15:30-15:45", "15:45-16:00",
-                                     "16:00-16:15", "16:15-16:30", "16:30-16:45", "16:45-17:00",
-                                     "17:00-17:15", "17:15-17:30"
-        };
+        String[] timeSlotsOptions = getAllTimeSlotsForDuration(duration, date);
+        String[] timesAvailableForDocOrNurse = connect.getTimesFromDoctorsandnurses(docOrNurse, date);
+        
+        ArrayList<String> timeSlotsAvailableArrayList = new ArrayList<String>();
+        String[] timeSlotsAvailableArray;
+        int durationInt = Integer.parseInt(duration.substring(0, 2));
+        
+        if (durationInt == 15) {
+            for (int i=0; i<timesAvailableForDocOrNurse.length; i++) {
+                // If timeslot does not have 'n' (for no - not available) then this timeslot is available so add it to  the array list.
+                if (timesAvailableForDocOrNurse[i].equalsIgnoreCase("y"))
+                    timeSlotsAvailableArrayList.add(timeSlotsOptions[i]);
+            }
+        }
+        else if (durationInt == 30) {
+            for (int i=0; i<timesAvailableForDocOrNurse.length-1; i++) {
+                // If timeslot does not have 'n' (for no - not available) then this timeslot is available so add it to  the array list.
+                if (timesAvailableForDocOrNurse[i].equalsIgnoreCase("y") && timesAvailableForDocOrNurse[i+1].equalsIgnoreCase("y"))
+                    timeSlotsAvailableArrayList.add(timeSlotsOptions[i]);
+            }
+        }
+        else if (durationInt == 45) {
+            for (int i=0; i<timesAvailableForDocOrNurse.length-2; i++) {
+                // If timeslot does not have 'n' (for no - not available) then this timeslot is available so add it to  the array list.
+                if (timesAvailableForDocOrNurse[i].equalsIgnoreCase("y") && timesAvailableForDocOrNurse[i+1].equalsIgnoreCase("y") && timesAvailableForDocOrNurse[i+2].equalsIgnoreCase("y"))
+                    timeSlotsAvailableArrayList.add(timeSlotsOptions[i]);
+            }
+        }
+        else if (durationInt == 60) {
+            for (int i=0; i<timesAvailableForDocOrNurse.length-3; i++) {
+                // If timeslot does not have 'n' (for no - not available) then this timeslot is available so add it to  the array list.
+                if (timesAvailableForDocOrNurse[i].equalsIgnoreCase("y") && timesAvailableForDocOrNurse[i+1].equalsIgnoreCase("y") && timesAvailableForDocOrNurse[i+2].equalsIgnoreCase("y") && timesAvailableForDocOrNurse[i+3].equalsIgnoreCase("y"))
+                    timeSlotsAvailableArrayList.add(timeSlotsOptions[i]);
+            }
+        }
+        
+        timeSlotsAvailableArray = new String[timeSlotsAvailableArrayList.size()];
+        
+        for (int i=0; i<timeSlotsAvailableArray.length; i++)
+            timeSlotsAvailableArray[i] = timeSlotsAvailableArrayList.get(i);
+        
+        return timeSlotsAvailableArray;
+    }
+    
+    public static String[] getTimeSlotsAvailable(String docOrNurse, String date) { // OLD
+        
+        DatabaseConnection connect = new DatabaseConnection();
+        
+        String[] timeSlotsOptions = getAllTimeSlots(date);
         String[] timesAvailableForDocOrNurse = connect.getTimesFromDoctorsandnurses(docOrNurse, date);
         
         ArrayList<String> timeSlotsAvailableArrayList = new ArrayList<String>();
