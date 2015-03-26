@@ -46,13 +46,14 @@ public class GUI extends JFrame {
 	
         // addAppFrame items
         private JFrame addAppFrame;
-        private JLabel idAddLabel, typeAddLabel, patientAddLabel, staffAddLabel, dateAddLabel, startTimeAddLabel, finishTimeAddLabel, durationAddLabel, appTimeAddLabel;
+        private JLabel idAddLabel, typeAddLabel, patientAddLabel, staffAddLabel, dateAddLabel, startTimeAddLabel, finishTimeAddLabel, durationAddLabel, appTimeAddLabel, roomAddLabel;
         private JRadioButton routineTypeAdd, careManagementTypeAdd;
         private ButtonGroup radioGroupAdd;
         private JTextField idAddText, typeAddText, patientAddText, staffAddText, dateAddText, startTimeAddText, finishTimeAddText;
-        private JComboBox staffListAdd, durationsListAdd, timesListAdd;
+        private JComboBox patientsListAdd, staffListAdd, durationsListAdd, timesListAdd, roomsListAdd;
         private JButton checkDateButton, submitAdd, resetAdd, cancelAdd;
         private String timeSelectedAdd, dateLookedAt, typeChosenAdd = "", oldTimeSlot, oldStaff, oldDate, id;
+        private String[][] patientsKeyAndVal;
         
         // editAppFrame items
         private JFrame editAppFrame;
@@ -300,17 +301,23 @@ public class GUI extends JFrame {
                 addButton.addActionListener(listen);
                 updateButton.addActionListener(listen);
                 setHolidaysButton.addActionListener(listen);
+                
+                appFrame.addWindowListener( new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {
+                    Main.close();
+                }
+            });
 	}
         
         public void addAppFrame() {
             
             appFrame.setEnabled(false);
-            //if (inEditingMode) editAppFrame.setEnabled(false);
+            if (inEditingMode) editAppFrame.setEnabled(false);
             
             String frameName = (! inEditingMode) ? "Add an Appointment" : "Editing an Appointment";
             addAppFrame = new JFrame(frameName);
             addAppFrame.setVisible(true);
-            addAppFrame.setBounds(400, 200, 350, 400);
+            addAppFrame.setBounds(400, 200, 350, 450);
             JPanel addAppPanel = new JPanel();
             addAppPanel.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
@@ -324,6 +331,7 @@ public class GUI extends JFrame {
             //finishTimeAddLabel = new JLabel("Finish Time");
             durationAddLabel = new JLabel("Duration");
             appTimeAddLabel = new JLabel("Choose Time Slot");
+            roomAddLabel = new JLabel("Choose Room");
             
             
             //idAddText = new JTextField(15);
@@ -334,7 +342,9 @@ public class GUI extends JFrame {
                 radioGroupAdd.add(routineTypeAdd);
                 radioGroupAdd.add(careManagementTypeAdd);
                 
-            patientAddText = new JTextField(15);
+            //patientAddText = new JTextField(15);
+            patientsKeyAndVal = Main.getKeyAndValOfPatients();
+            patientsListAdd = new JComboBox(Main.getAllValuesOnly(patientsKeyAndVal));
             //staffAddText = new JTextField(15);
             dateAddText = new JTextField(15);
             //startTimeAddText = new JTextField(15);
@@ -346,9 +356,10 @@ public class GUI extends JFrame {
             
             durationsListAdd = new JComboBox(Main.getAllDurations());
             
-            String[] timeSlotsAvailableArray = {"Add & Check Date First"};
-            timesListAdd = new JComboBox(timeSlotsAvailableArray);
+            timesListAdd = new JComboBox(arr);
             timesListAdd.setEnabled(false);
+            
+            roomsListAdd = new JComboBox(Main.getAllRooms());
             
             dateLookedAt = "";
             typeChosenAdd = "";
@@ -374,7 +385,8 @@ public class GUI extends JFrame {
             c.gridy = 6; //c.gridx = 0;
             addAppPanel.add(patientAddLabel, c);
             c.gridy = 7;
-            addAppPanel.add(patientAddText, c);
+            //addAppPanel.add(patientAddText, c);
+            addAppPanel.add(patientsListAdd, c);
             c.gridy = 8;
             //addAppPanel.add(staffAddText, c);
             c.gridy = 9;
@@ -404,8 +416,12 @@ public class GUI extends JFrame {
             c.gridy = 21;
             addAppPanel.add(timesListAdd, c);
             c.gridy = 22;
-            addAppPanel.add(submitAdd, c);
+            addAppPanel.add(roomAddLabel, c);
             c.gridy = 23;
+            addAppPanel.add(roomsListAdd, c);
+            c.gridy = 24;
+            addAppPanel.add(submitAdd, c);
+            c.gridy = 25;
             addAppPanel.add(resetAdd, c);
             //c.gridy = 22;
             //addAppPanel.add(cancelAdd, c);
@@ -422,8 +438,16 @@ public class GUI extends JFrame {
             durationsListAdd.addItemListener( new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     if (e.getStateChange() == ItemEvent.SELECTED) {
-                        // If duration is changedthen update timeslots.
+                        // If duration is changed then update timeslots.
                         updateListOfTimes();
+                    }
+                }
+            });
+            timesListAdd.addItemListener( new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                    if (e.getStateChange() == ItemEvent.SELECTED) {
+                        // If timeslot is changed/selected, then update rooms list.
+                        updateListOfRooms();
                     }
                 }
             });
@@ -441,11 +465,13 @@ public class GUI extends JFrame {
             });*/
             addAppFrame.addWindowListener( new WindowAdapter() {
                 public void windowClosing(WindowEvent e) {
-                    if (inEditingMode)
+                    if (inEditingMode) {
+                        editAppFrame.setEnabled(true);;
                         inEditingMode = false;
-                    appFrame.setEnabled(true);
-                    if (inEditingMode) editAppFrame.setEnabled(true);
-                    
+                    }
+                    else {
+                        appFrame.setEnabled(true);
+                    }
                 }
             });
         }
@@ -466,7 +492,7 @@ public class GUI extends JFrame {
             
             editAppFrame = new JFrame("Appointment Details");
             editAppFrame.setVisible(true);
-            editAppFrame.setBounds(400, 200, 350, 400);
+            editAppFrame.setBounds(400, 200, 350, 450);
             JPanel editAppPanel = new JPanel();
             editAppPanel.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
@@ -634,6 +660,15 @@ public class GUI extends JFrame {
                 for (String val : allDurations)
                     durationsListAdd.addItem(val);
             }
+        }
+        
+        public void updateListOfRooms() {
+            
+            roomsListAdd.removeAllItems();
+            String[] allRooms = Main.getRoomsAvailable(dateAddText.getText(), timesListAdd.getSelectedItem().toString());
+            //String[] allRooms = Main.getAllRooms();
+            for (String room : allRooms)
+                roomsListAdd.addItem(room);
         }
         
         /*public JComboBox updateListOfStaff(JComboBox list) {
@@ -888,8 +923,8 @@ public class GUI extends JFrame {
                             if (! typeChosenAdd.equalsIgnoreCase("Routine") && ! typeChosenAdd.equalsIgnoreCase("Care Management"))
                             //if (! routineTypeAdd.isSelected() || ! careManagementTypeAdd.isSelected())
                                 msg += "- Choose Type of Appointment\n";
-                            if (patientAddText.getText().equals(""))
-                                msg += "- Enter patient name\n";
+                            //if (patientAddText.getText().equals(""))
+                                //msg += "- Enter patient name\n";
                             if (dateAddText.getText().equals("") || ! Main.dateIsInCorrectFormat(dateAddText.getText()) || ! Main.gpIsOpenOn(dateAddText.getText()))
                                 msg += "- Add a correct date\n";
                             if (staffListAdd.getSelectedItem().equals("Add & Check Date First") || staffListAdd.getSelectedItem().equals("") || staffListAdd.getSelectedItem().equals(null))
@@ -908,11 +943,13 @@ public class GUI extends JFrame {
                                     String[] timeSlots = timesListAdd.getSelectedItem().toString().split("-");
                                     String[] array = {
                                         typeChosenAdd,
-                                        patientAddText.getText(),
+                                        //patientAddText.getText(),
+                                        Main.getKey(patientsKeyAndVal, patientsListAdd.getSelectedIndex()),
                                         staffListAdd.getSelectedItem().toString(),
                                         dateAddText.getText(),
                                         timeSlots[0],
-                                        timeSlots[1]
+                                        timeSlots[1],
+                                        roomsListAdd.getSelectedItem().toString()
                                     };
                                     Main.addAppointment(array);
 
@@ -926,18 +963,19 @@ public class GUI extends JFrame {
                                         Main.createAvailability(timesListAdd.getSelectedItem().toString(), staffListAdd.getSelectedItem().toString(), dateAddText.getText());
                                     }
                                     JOptionPane.showConfirmDialog(null, "Appointment has been recorded successfully.", "Complete", JOptionPane.CLOSED_OPTION);
-                                    addAppFrame.setVisible(false);
                                 }
                                 else { // Then it is in EDITING mode
                                     // Edit an existing appointment, which is identified by its ID.
                                     String[] timeSlots = timesListAdd.getSelectedItem().toString().split("-");
                                     String[] array = {
                                         typeChosenAdd,
-                                        patientAddText.getText(),
+                                        //patientAddText.getText(),
+                                        Main.getKey(patientsKeyAndVal, patientsListAdd.getSelectedIndex()),
                                         staffListAdd.getSelectedItem().toString(),
                                         dateAddText.getText(),
                                         timeSlots[0],
-                                        timeSlots[1]
+                                        timeSlots[1],
+                                        roomsListAdd.getSelectedItem().toString()
                                     };
                                     Main.editAppointment(array, id);
 
@@ -954,6 +992,7 @@ public class GUI extends JFrame {
                                 }
                                 
                                 appFrame.setEnabled(true);
+                                addAppFrame.setVisible(false);
                                 tableModel.setFilter(new String[]{});
                                 tableModel.fireTableDataChanged();
                             }
@@ -962,13 +1001,15 @@ public class GUI extends JFrame {
                             
                             //idAddText.setText("");
                             //typeAddText.setText("");
-                            patientAddText.setText("");
+                            //patientAddText.setText("");
+                            patientsListAdd.setSelectedIndex(0);
                             //staffAddText.setText("");
                             dateAddText.setText("");
                             //startTimeAddText.setText("");
                             //finishTimeAddText.setText("");
                             updateListOfStaff();
                             updateListOfTimes();
+                            durationsListAdd.setSelectedIndex(0);
                         }
                         
                         // updateAppFrame actions listener

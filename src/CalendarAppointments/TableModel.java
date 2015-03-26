@@ -5,16 +5,22 @@ import javax.swing.*;
 
 public class TableModel extends AbstractTableModel {
     
-    private String[] columnNames = {"App.ID", "Type", "Patient ID", "Satff ID", "Date", "Start Time", "Finish Time"};
-    //private String[] columnNames = {"Edit/Remove", "App.ID", "Type", "Patient ID", "Satff ID", "Date", "Start Time", "Finish Time"};
-    private String[] filter = {"", "", "", "", "", "", ""};
-    private Object[][] tableData;
+    private String[] columnNames = {"App.ID", "Type", "Patient ID", "Satff ID", "Date", "Start Time", "Finish Time", "Room", "Summary"};
+    //private String[] columnNames = {"Edit/Remove", "App.ID", "Type", "Patient ID", "Satff ID", "Date", "Start Time", "Finish Time", "Room", "Summary"};
+    private String[] filter = {"", "", "", "", "", "", "", "", ""};
+    private Object[][] tableData, friendlyTableData;
+    private Object[] patientsIDs, staffIDs;
     
     public TableModel() {
         
         super();
         tableData = Main.getAppointments(filter);
         //tableData = addControlButtons(tableData);
+        /*friendlyTableData = getCopyOf(tableData);
+        keepPatientsIDs();
+        keepStaffIDs();
+        Main.exchangePatientIDsWithPatientNames(friendlyTableData);
+        Main.exchangeStaffIDsWithStaffNames(friendlyTableData);*/
     }
     
     public void setFilter(String[] filterArray) {
@@ -22,6 +28,50 @@ public class TableModel extends AbstractTableModel {
         filter = filterArray;
         tableData = Main.getAppointments(filter);
         //tableData = addControlButtons(tableData);
+        /*friendlyTableData = getCopyOf(tableData);
+        keepPatientsIDs();
+        keepStaffIDs();
+        Main.exchangePatientIDsWithPatientNames(friendlyTableData);
+        Main.exchangeStaffIDsWithStaffNames(friendlyTableData);*/
+    }
+    
+    public void keepPatientsIDs() {
+        
+        patientsIDs = new String[tableData.length];
+        int col = 2;
+        for (int i=0; i<tableData.length; i++) {
+            patientsIDs[i] = tableData[i][col];
+        }
+    }
+    
+    public void keepStaffIDs() {
+        
+        staffIDs = new String[tableData.length];
+        int col = 3;
+        for (int i=0; i<tableData.length; i++) {
+            staffIDs[i] = tableData[i][col];
+        }
+    }
+    
+    public Object getPatientID(int row) {
+        
+        return patientsIDs[row];
+    }
+    
+    public Object getStaffID(int row) {
+        
+        return staffIDs[row];
+    }
+    
+    public static Object[][] getCopyOf(Object[][] array) {
+        
+        Object[][] arrayToReturn = new Object[array.length][array[0].length];
+        for (int i=0; i<array.length; i++) {
+            for (int j=0; j<array[0].length; j++) {
+                arrayToReturn[i][j] = array[i][j];
+            }
+        }
+        return arrayToReturn;
     }
     
     public String[] getColumnsNames() {
@@ -37,6 +87,7 @@ public class TableModel extends AbstractTableModel {
     public Object[][] getTableData() {
         
         return tableData;
+        //return friendlyTableData;
     }
     
     public int getRowCount() {

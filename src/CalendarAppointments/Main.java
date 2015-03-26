@@ -44,7 +44,16 @@ public class Main {
         //String[] columnNames = getColumnNamesForTimeSlot("09:00-09:45"); for (String colName : columnNames) System.out.println(colName);
         //setAvailability(true, "09:30-10:15", "mohammad", "2014-05-02");
         //createAvailability("09:30-10:00", "mohammad", "2014-04-10");
-        String[] timeSlots = getAllTimeSlots("2014-03-01"); for (String time : timeSlots) System.out.println(time);
+        //String[] timeSlots = getAllTimeSlots("2014-03-01"); for (String time : timeSlots) System.out.println(time);
+        //print(getKey(new String[][]{{"1","2"},{"3","4"},{"5","6"}}, 1));
+        //print(getVal(new String[][]{{"1","2"},{"3","4"},{"5","6"}}, 1));
+        //print(new String[]{"1","2","3","4","5"});
+        //print(new String[][]{{"1","2","3"},{"4","5"},{"6","7","8"}});
+        //print(getKeyAndValOfPatients());
+        //getRoomsAvailable("2014-05-02","");
+        //getRoomsAvailable("2014-05-02", "");
+        //int[] indeces = getColumnIndecesForTimeSlot("09:00-09:45"); for (int index : indeces) System.out.println(index);
+        print(getTimesFromRoom("2014-05-02"));
     }
     
     public static void execute (String instruction) { // This method can be used for SQL queries that do not return a value, e.g. INSERT, UPDATE and REMOVE.
@@ -73,7 +82,7 @@ public class Main {
             
             ArrayList<String> allConditions = new ArrayList<String>();
             
-            String[] columnNames = {"appId ", "appType ", "patientId ", "appWithStaffId ", "date ", "startTime ", "finishTime "};
+            String[] columnNames = {"appId ", "appType ", "patientId ", "appWithStaffId ", "date ", "startTime ", "finishTime ", "room", "summary"};
             for (int i=0; i<line.length; i++) {
                 if ( ! line[i].equals("") )
                     allConditions.add(columnNames[i] + "LIKE '" + line[i] + "' ");
@@ -94,7 +103,27 @@ public class Main {
         query += ";";
         System.out.println(query);
         String[][] table = connect.getRecords(query);
+        connect.exchangePatientIDsWithPatientNames(table);
+        connect.exchangeStaffIDsWithStaffNames(table);
         return table;
+    }
+    
+    public static Object[][] exchangePatientIDsWithPatientNames(Object[][] table) {
+        
+        DatabaseConnection connect = new DatabaseConnection();
+        return connect.exchangePatientIDsWithPatientNames(table);
+    }
+    public static Object[][] exchangeStaffIDsWithStaffNames(Object[][] table) {
+        
+        DatabaseConnection connect = new DatabaseConnection();
+        return connect.exchangePatientIDsWithPatientNames(table);
+    }
+    
+    public static Object[][] getCopyOf(Object[][] array) {
+        
+        Object[][] arrayToReturn = {};
+        System.arraycopy(array, 0, arrayToReturn, 0, array.length);
+        return arrayToReturn;
     }
     
     public static String[][] getDaysOff(String[] line) {
@@ -156,7 +185,7 @@ public class Main {
             values += val;
         
         String update = "INSERT INTO appointments " + 
-                            "(appType, patientId, appWithStaffId, date, startTime, finishTime) " + 
+                            "(appType, patientId, appWithStaffId, date, startTime, finishTime, room) " + 
                             "VALUES (" + values + ") ;";
         //System.out.println(update);
         connect.execute(update);
@@ -166,7 +195,7 @@ public class Main {
         
         DatabaseConnection connect = new DatabaseConnection();
         
-        String[] columnName = {"appType", "patientId", "appWithStaffId", "date", "startTime", "finishTime"};
+        String[] columnName = {"appType", "patientId", "appWithStaffId", "date", "startTime", "finishTime", "room"};
         
         ArrayList<String> list = new ArrayList<String>();
         for (int i=0; i<array.length; i++) {
@@ -183,8 +212,15 @@ public class Main {
         String update = "UPDATE appointments " + 
                             "SET " + values + 
                             " WHERE appId = " + id + " ;";
-        System.out.println(update);
+        //System.out.println(update);
         connect.execute(update);
+    }
+    
+    public static String[][] getKeyAndValOfPatients() {
+        
+        DatabaseConnection connect = new DatabaseConnection();
+        String[][] array = connect.getKeyAndValOfPatients();
+        return array;
     }
     
     // Return true if all entries are unset or empty
@@ -269,8 +305,10 @@ public class Main {
         for (int i=0; i<allStartTimes.length; i++) {
             if (start.equals(allStartTimes[i]))
                 startIndex = i;
-            if (finish.equals(allFinishTimes[i]))
+            if (finish.equals(allFinishTimes[i])) {
                 finishIndex = i;
+                break;
+            }
         }
         
         String[] columnNamesToReturn = new String[(finishIndex - startIndex) + 1];
@@ -279,6 +317,31 @@ public class Main {
         }
         
         return columnNamesToReturn;
+    }
+    
+    public static int[] getColumnIndecesForTimeSlot(String timeSlot) {
+        String[] timeSlots = timeSlot.split("-");
+        String start = timeSlots[0];
+        String finish = timeSlots[1];
+        String[] allStartTimes = getAllStartTimes();
+        String[] allFinishTimes = getAllFinishTimes();
+        
+        int startIndex = 0, finishIndex = 0;
+        for (int i=0; i<allStartTimes.length; i++) {
+            if (start.equals(allStartTimes[i]))
+                startIndex = i;
+            if (finish.equals(allFinishTimes[i])) {
+                finishIndex = i;
+                break;
+            }
+        }
+        
+        int[] columnIndecesToReturn = new int[(finishIndex - startIndex) + 1];
+        for (int i = 0, index = startIndex; index<=finishIndex; i++, index++) {
+            columnIndecesToReturn[i] = index;
+        }
+        
+        return columnIndecesToReturn;
     }
     
     public static void setAvailability(boolean availableOrNot, String timeSlot, String docOrNurse, String date) {
@@ -716,6 +779,141 @@ public class Main {
         return daysToReturn;
     }
     
+    public static String[] getAllRooms() {
+        
+        /*DatabaseConnection connect = new DatabaseConnection();
+        String[] allRooms = connect.getOneColumnFromTable("SELECT roomId FROM room ;");*/
+        String[] allRooms = {"A001", "A002", "A003", "A004", "A005", "A006", "A007", "A008", "A009", "A010", 
+                             "A101", "A102", "A103", "A104", "A105", "A106", "A107", "A108", "A109", "A110" 
+        };
+        return allRooms;
+    }
+    
+    public static String[] getRoomsAvailableOld(String date, String timeSlot) { // OLD
+        
+        String[] rooms = getAllRooms();
+        for (int i=0; i<rooms.length; i++) {
+            if (! recordExists("SELECT * FROM room WHERE room = '" + rooms[i] + "' AND date = '" + date + "' ;"))
+                print(rooms[i]);//return rooms;
+            else {
+
+            }
+        }
+        return rooms;
+    }
+    
+    // Retrieve records from the database
+    public static String[][] getTimesFromRoom(String date) {
+        
+        DatabaseConnection connect = new DatabaseConnection();
+        //String[] allRooms = getAllRooms();
+        String query = "SELECT " +
+        "a9,b9,c9,d9,a10,b10,c10,d10,a11,b11,c11,d11,a12,b12,c12,d12,a13,b13,c13,d13,a14,b14,c14,d14,a15,b15,c15,d15,a16,b16,c16,d16,a17,b17 " +
+        ", room, date FROM room ";
+        //query += "WHERE room LIKE ";
+        /*for (int i=0; i<allRooms.length; i++) {
+            if (i != allRooms.length-1)
+                query += "'" + allRooms[i] + "' OR ";
+            else
+                query += "'" + allRooms[i] + "' ";
+        }
+        query +=  "AND date LIKE '" + date + "' ;";*/
+        query += "WHERE date LIKE '" + date + "' ;";
+        System.out.println(query);
+        String[][] array = connect.getTimesFromRoom(query);
+        return array;
+    }
+    
+    public static String[] getRoomsAvailable(String date, String timeSlot) {
+        
+        String[][] timesFromRoom = getTimesFromRoom(date);
+        int[] columnIndeces = getColumnIndecesForTimeSlot(timeSlot);
+        String[] allRooms = getAllRooms();
+        String[] roomsAvailableToReturn = {};
+        int roomsColumn = 34;
+        ArrayList<String> OKList = new ArrayList<String>();
+        ArrayList<String> toConsiderList = new ArrayList<String>();
+        // Add the rooms that need to be checked for availability
+        System.out.println(timesFromRoom.length + " " + timesFromRoom[0].length);
+        if (timesFromRoom.length > 0) {
+            for (int i=0; i<timesFromRoom.length; i++) {
+                toConsiderList.add(timesFromRoom[i][roomsColumn]);
+            }
+        }
+        // Add the OK rooms
+        for (int i=0; i<timesFromRoom.length; i++) {
+            if(! toConsiderList.contains(timesFromRoom[i][roomsColumn]))
+                OKList.add(timesFromRoom[i][roomsColumn]);
+        }
+        // Check the toConsider rooms for availability at specified time slot.
+        for (int i=0; i<toConsiderList.size(); i++) {
+            // Find row in 'timesFromRoom' where value equals toConsiderList.get(i).
+            findRow : for(int j=0; j<timesFromRoom.length; j++) {
+                if (timesFromRoom[j][roomsColumn].equals(toConsiderList.get(i))) {
+                    boolean flag = true;
+                    for (int k=columnIndeces[0]; k<columnIndeces.length-1; k++) {
+                        if (!timesFromRoom[j][k].equalsIgnoreCase("y"))
+                            flag = false;
+                    }
+                    if (flag)
+                        OKList.add(toConsiderList.get(i));
+                    break findRow;
+                }
+            }
+        }
+        
+        roomsAvailableToReturn = convertArrayListToArray(OKList);
+        return roomsAvailableToReturn;
+    }
+    
+    public static String[] getAllKeysOnly(String[][] array) {
+        
+        String[] arrayToReturn = new String[array.length];
+        for (int i=0; i<array.length; i++)
+            arrayToReturn[i] = array[i][0];
+        return arrayToReturn;
+    }
+    
+    public static String[] getAllValuesOnly(String[][] array) {
+        
+        String[] arrayToReturn = new String[array.length];
+        for (int i=0; i<array.length; i++)
+            arrayToReturn[i] = array[i][1];
+        return arrayToReturn;
+    }
+    
+    public static String getKey(String[][] array, int row) {
+        
+        return array[row][0];
+    }
+    
+    public static String getVal(String[][] array, int row) {
+        
+        return array[row][1];
+    }
+    
+    public static void print(String str) {
+        
+        System.out.println(str);
+    }
+    
+    public static void print(String[] array) {
+        
+        for (String val : array)
+            System.out.print(val + "\t");
+        System.out.println();
+    }
+    
+    public static void print(String[][] array) {
+        
+        for (int i=0; i<array.length; i++) {
+            for (int j=0; j<array[i].length; j++) {
+                System.out.print(array[i][j] + "\t");
+            }
+            System.out.println();
+        }
+    }
+    
     public static boolean isNumber(String str) {
         
         for (int i=0; i<str.length(); i++) {
@@ -789,6 +987,36 @@ public class Main {
         return strArray;
     }
     
+    public static String[] convertArrayListToArray(ArrayList<String> list) {
+        
+        String[] array = {};
+        array = new String[list.size()];
+        for (int i=0; i<list.size(); i++) {
+            array[i] = list.get(i);
+        }
+        return array;
+    }
+    
+    public static String[][] convert2DArrayListTo2DArray(ArrayList<ArrayList<String>> list) {
+        
+        String[][] array = {{}};
+        if (list.size() > 0) {
+            array = new String[list.size()][list.get(0).size()];
+            for (int i=0; i<list.size(); i++) {
+                for (int j=0; j<list.get(i).size(); j++) {
+                    array[i][j] = list.get(i).get(j);
+                }
+            }
+        }
+        return array;
+    }
+    
+    public static void close() {
+        
+        DatabaseConnection connect = new DatabaseConnection();
+        connect.close();
+    }
+    
     public static void getAppointmentsNoGUI() {
         
         DatabaseConnection connect = new DatabaseConnection();
@@ -799,7 +1027,7 @@ public class Main {
         
         Scanner in = new Scanner(System.in);
         String msg = "Please enter details of any of the below properties (separated by commas)\n";
-        msg += "appId, appType, patientId, appWithStaffId, date, startTime, finishTime\n";
+        msg += "appId, appType, patientId, appWithStaffId, date, startTime, finishTime, room, summary\n";
         System.out.println(msg);
         String input = in.nextLine();
         String[] line = input.split(",");
@@ -813,7 +1041,7 @@ public class Main {
             
             ArrayList<String> allConditions = new ArrayList<String>();
             
-            String[] columnNames = {"appId ", "appType ", "patientId ", "appWithStaffId ", "date ", "startTime ", "finishTime "};
+            String[] columnNames = {"appId ", "appType ", "patientId ", "appWithStaffId ", "date ", "startTime ", "finishTime ", "room", "summary"};
             for (int i=0; i<line.length; i++) {
                 if ( ! line[i].equals("") )
                     allConditions.add(columnNames[i] + "LIKE '" + line[i] + "' ");
@@ -846,12 +1074,12 @@ public class Main {
         
         Scanner in = new Scanner(System.in);
         String msg = "Please enter details of the new appointment according to the properties below (separated by commas)\n";
-        msg += "appType, patientId, appWithStaffId, date, startTime, finishTime\n";
+        msg += "appType, patientId, appWithStaffId, date, startTime, finishTime, room\n";
         System.out.println(msg);
         String input = in.nextLine();
         
         String update = "INSERT INTO appointments " + 
-                            "(appType, patientId, appWithStaffId, date, startTime, finishTime)" + 
+                            "(appType, patientId, appWithStaffId, date, startTime, finishTime, room)" + 
                             "VALUES (" + input + ") ;";
         
         //connect.addRecords(update);

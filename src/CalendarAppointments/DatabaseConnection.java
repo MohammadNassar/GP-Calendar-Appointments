@@ -45,7 +45,7 @@ public class DatabaseConnection {
         
         //String query = "SELECT * FROM appointments;";
         String query = instruction;
-        String[][] rowsInTable = {{"", "", "", "", "", "", ""}};
+        String[][] rowsInTable = {{"", "", "", "", "", "", "", "", ""}};
         
         try {
             // Perform the query ==> (Execute the SQL statement and save the returned value in variable 'result').
@@ -64,6 +64,8 @@ public class DatabaseConnection {
                 String date = result.getString("date");
                 String startTime = result.getString("startTime");
                 String finishTime = result.getString("finishTime");
+                String room = result.getString("room");
+                String summary = result.getString("summary");
                 
                 list.get(index).add(appId);
                 list.get(index).add(appType);
@@ -72,17 +74,14 @@ public class DatabaseConnection {
                 list.get(index).add(date);
                 list.get(index).add(startTime);
                 list.get(index).add(finishTime);
+                list.get(index).add(room);
+                list.get(index).add(summary);
                 index++;
             }
             
-            if (list.size() > 0) {
-                rowsInTable = new String[list.size()][list.get(0).size()];
-                for (int i=0; i<list.size(); i++) {
-                    for (int j=0; j<list.get(i).size(); j++) {
-                        rowsInTable[i][j] = list.get(i).get(j);
-                    }
-                }
-            }
+            rowsInTable = convert2DArrayListTo2DArray(list);
+            //exchangePatientIDsWithPatientNames(rowsInTable);
+            //exchangeStaffIDsWithStaffNames(rowsInTable);
             
         } catch (SQLException s) {
             System.out.println("Unable to execute query. ==> ("+s+")");
@@ -129,6 +128,104 @@ public class DatabaseConnection {
         }
         
         return rowsInTable;
+    }
+    
+    public String[][] getKeyAndValOfPatients() {
+        
+        String query = "SELECT * FROM Patient ;";
+        System.out.println(query);
+        String[][] array = {{}};
+        try {
+            result = statement.executeQuery(query);
+            ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
+            int index = 0;
+            while (result.next()) {
+
+                list.add(new ArrayList<String>());
+                boolean addMName;
+                // Concatenate results retrieved from table and print them.
+                String key = result.getString("NhsNumber");
+                String fname = result.getString("FirstName");
+                String mname = result.getString("MiddleName");
+                addMName = (result.wasNull()) ? false : true;
+                String lname = result.getString("LastName");
+                String val = "";
+                if (addMName)
+                    val = fname + " " + mname + " " + lname;
+                else
+                    val = fname + " " + lname;
+
+                list.get(index).add(key);
+                list.get(index).add(val);
+                index++;
+            }
+            array = convert2DArrayListTo2DArray(list);
+        }
+        catch (SQLException s) {
+        System.out.println("Unable to execute query. ==> ("+s+")");
+        }
+        return array;
+    }
+    
+    public Object[][] exchangePatientIDsWithPatientNames(Object[][] array) {
+        
+        int col = 2;
+        for (int i=0; i<array.length; i++) {
+            String id = array[i][col].toString();
+            String query = "SELECT * FROM Patient WHERE NhsNumber = '" + id + "' ;";
+            //System.out.println(query);
+            String name = id; // Initially name is set to id (the original value), just in case if any problem occurs, then the id number would stay there in the table.
+            try {
+                result = statement.executeQuery(query);
+                if (result.next()) {
+                    boolean addMName;
+                    // Concatenate results retrieved from table and eventually add them where the id used to be.
+                    String fname = result.getString("FirstName");
+                    String mname = result.getString("MiddleName");
+                    addMName = (result.wasNull()) ? false : true;
+                    String lname = result.getString("LastName");
+                    if (addMName)
+                        name = fname + " " + mname + " " + lname;
+                    else
+                        name = fname + " " + lname;
+                }
+                array[i][2] = name;
+            }
+            catch (SQLException s) {
+                System.out.println("Unable to execute query. ==> ("+s+")");
+            }
+        }
+        return array;
+    }
+    
+    public Object[][] exchangeStaffIDsWithStaffNames(Object[][] array) {
+        
+        int col = 3;
+        for (int i=0; i<array.length; i++) {
+            String id = array[i][col].toString();
+            String query = "SELECT * FROM Staff WHERE StaffID = '" + id + "' ;";
+            //System.out.println(query);
+            String name = id;
+            try {
+                result = statement.executeQuery(query);
+                if (result.next()) {
+                    // Concatenate results retrieved from table and eventually add them where the id used to be.
+                    String fname = result.getString("Forename");
+                    String sname = result.getString("Surname");
+                    name = fname + " " + sname;
+                }
+                array[i][col] = name;
+            }
+            catch (SQLException s) {
+            System.out.println("Unable to execute query. ==> ("+s+")");
+            }
+        }
+        return array;
+    }
+    
+    public String getStaffNameWhoseIdIs(String id) {
+        
+        return id;
     }
     
     // Retrieve ANY records from the database
@@ -202,7 +299,40 @@ public class DatabaseConnection {
     }
     
     // Retrieve records from the database
-    public String[] getNamesFromDoctorsandnurses(String name) {
+    public String[] getTimesFromRoom(String room, String date) {
+        
+        String query = "SELECT " +
+        "a9,b9,c9,d9,a10,b10,c10,d10,a11,b11,c11,d11,a12,b12,c12,d12,a13,b13,c13,d13,a14,b14,c14,d14,a15,b15,c15,d15,a16,b16,c16,d16,a17,b17 " +
+        ", room, date " + 
+        "FROM " +
+        "room WHERE room LIKE '" + room + "' AND date LIKE '" + date + "' ;";
+        
+        System.out.println(query);
+        
+        String[] availabilityRow = new String[34];
+        String[] atColumns = {"a9","b9","c9","d9","a10","b10","c10","d10","a11","b11","c11","d11","a12","b12","c12","d12",
+                             "a13","b13","c13","d13","a14","b14","c14","d14","a15","b15","c15","d15","a16","b16","c16","d16","a17","b17"};
+        
+        try {
+            // Perform the query ==> (Execute the SQL statement and save the returned value in variable 'result').
+            result = statement.executeQuery(query);
+        
+            if (result.next()) {
+                
+                // Add results retrieved from table to an array.
+                for (int i=0; i<atColumns.length; i++) {
+                    availabilityRow[i] = result.getString(atColumns[i]);
+                }
+            }
+        } catch (SQLException s) {
+            System.out.println("Unable to execute query. ==> ("+s+")");
+        }
+        
+        return availabilityRow;
+    }
+    
+    // Retrieve records from the database
+    public String[] getNamesFromDoctorsandnurses(String name) { // NOT USED
         
         String query = "SELECT " +
         "a9,b9,c9,d9,a10,b10,c10,d10,a11,b11,c11,d11,a12,b12,c12,d12,a13,b13,c13,d13,a14,b14,c14,d14,a15,b15,c15,d15,a16,b16,c16,d16,a17,b17 " +
@@ -264,12 +394,15 @@ public class DatabaseConnection {
                 String date = result.getString("date");
                 String startTime = result.getString("startTime");
                 String finishTime = result.getString("finishTime");
+                String room = result.getString("room");
+                String summary = result.getString("summary");
                 
                 // Concatenate results retrieved from table and print them.
                 String rowInTable = "App.No.: "+appId+"\t"+"App.Type is: "+appType+"\t";
                 if (appType.equalsIgnoreCase("Routine")) rowInTable += "\t";
                 rowInTable += "Patient: "+patientId+"\t"+"App.with: "+appWithStaffId+"\t";
                 rowInTable += "Date: "+date+"\t"+"Start time: "+startTime+"\t"+"Finish time: "+finishTime+"\t";
+                rowInTable += "Room: "+room+"\t"+"Summary: "+summary;
                 System.out.println(rowInTable);
             }
             
@@ -298,5 +431,81 @@ public class DatabaseConnection {
             System.out.println("Unable to execute query. ==> ("+s+")");
         }
     }
+    // Retrieve records from the database
+    public String[][] getTimesFromRoom(String instruction) {
+        
+        //String query = "SELECT * FROM appointments;";
+        String query = instruction;
+        String[][] rowsInTable = {{}};
+        
+        try {
+            // Perform the query ==> (Execute the SQL statement and save the returned value in variable 'result').
+            result = statement.executeQuery(query);
+            
+            ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
+            int index = 0;
+            while (result.next()) {
+                
+                list.add(new ArrayList<String>());
+                // Concatenate results retrieved from table and print them.
+                for (int i=1; i<=36; i++) {
+                    String val = result.getString(i);
+                    list.get(index).add(val);
+                }
+                index++;
+            }
+            rowsInTable = convert2DArrayListTo2DArray(list);
+        } catch (SQLException s) {
+            System.out.println("Unable to execute query. ==> ("+s+")");
+        }
+        
+        return rowsInTable;
+    }
     
+    public String[][] getTable(String instruction) { // To improve.
+        
+        String[][] table = {};
+        System.out.println(instruction);
+        try {
+            statement.executeQuery(instruction);
+        } catch (SQLException s) {
+            System.out.println("Unable to execute query. ==> ("+s+")");
+        }
+        return table;
+    }
+    
+    public void close() {
+       
+        try {
+            
+            connect.close();
+            System.out.println("Closed");
+        } catch (SQLException s) {
+            System.out.println("Unable to get connection or create statement. ==> ("+s+")");
+        }
+    }
+    
+    public String[] convertArrayListToArray(ArrayList<String> list) {
+        
+        String[] array = {};
+        array = new String[list.size()];
+        for (int i=0; i<list.size(); i++) {
+            array[i] = list.get(i);
+        }
+        return array;
+    }
+    
+    public String[][] convert2DArrayListTo2DArray(ArrayList<ArrayList<String>> list) {
+        
+        String[][] array = {{}};
+        if (list.size() > 0) {
+            array = new String[list.size()][list.get(0).size()];
+            for (int i=0; i<list.size(); i++) {
+                for (int j=0; j<list.get(i).size(); j++) {
+                    array[i][j] = list.get(i).get(j);
+                }
+            }
+        }
+        return array;
+    }
 }
