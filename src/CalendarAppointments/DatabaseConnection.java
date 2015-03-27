@@ -7,11 +7,12 @@ import java.util.ArrayList;
 
 public class DatabaseConnection {
     
+    private static DatabaseConnection instance = null;
     private Connection connect;
     private Statement statement;
     private ResultSet result;
     
-    public DatabaseConnection() {
+    private DatabaseConnection() {
         
         String loginUser = "SEGA";
         String loginPassword = "";
@@ -38,6 +39,13 @@ public class DatabaseConnection {
         } catch (SQLException s) {
             System.out.println("Unable to get connection or create statement. ==> ("+s+")");
         }
+    }
+    
+    public static DatabaseConnection getInstance() {
+        
+        if (instance == null)
+            instance = new DatabaseConnection();
+        return instance;
     }
     
     // Retrieve records from the database

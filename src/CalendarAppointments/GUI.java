@@ -359,7 +359,8 @@ public class GUI extends JFrame {
             timesListAdd = new JComboBox(arr);
             timesListAdd.setEnabled(false);
             
-            roomsListAdd = new JComboBox(Main.getAllRooms());
+            roomsListAdd = new JComboBox(arr/*Main.getAllRooms()*/);
+            roomsListAdd.setEnabled(false);
             
             dateLookedAt = "";
             typeChosenAdd = "";
@@ -631,15 +632,21 @@ public class GUI extends JFrame {
             timesListAdd.removeAllItems();
             String[] timesOptions = new String[0];
             
-            if (! dateAddText.getText().equals("")) {
+             // If date is not empty AND list of staff is not empty.
+            if (! dateAddText.getText().equals("") && staffListAdd.getItemCount() != 0 && ! staffListAdd.getSelectedItem().equals("Add & Check Date First")) {
                 if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name LIKE '"+staffListAdd.getSelectedItem()+"' ;"))
                     timesOptions = Main.getTimeSlotsAvailable((String)staffListAdd.getSelectedItem(), dateLookedAt, durationsListAdd.getSelectedItem().toString());
                 else
                     timesOptions = Main.getAllTimeSlotsForDuration(durationsListAdd.getSelectedItem().toString(), dateAddText.getText());
                 timesListAdd.setEnabled(true);
                 
-                for (String val : timesOptions)
-                    timesListAdd.addItem(val);
+                if (timesOptions.length > 0) {
+                    for (String val : timesOptions)
+                        timesListAdd.addItem(val);
+                }
+                else{
+                    timesListAdd.addItem("No Available Time Slots");
+                    timesListAdd.setEnabled(false);}
             }
             else {
                 String[] options = {"Add & Check Date First"};
@@ -665,10 +672,18 @@ public class GUI extends JFrame {
         public void updateListOfRooms() {
             
             roomsListAdd.removeAllItems();
-            String[] allRooms = Main.getRoomsAvailable(dateAddText.getText(), timesListAdd.getSelectedItem().toString());
-            //String[] allRooms = Main.getAllRooms();
-            for (String room : allRooms)
-                roomsListAdd.addItem(room);
+            if (timesListAdd.getItemCount() != 0 && ! timesListAdd.getSelectedItem().toString().equals("Add & Check Date First") && ! timesListAdd.getSelectedItem().toString().equals("No Available Time Slots")) { // If list of time slots is not empty.
+                roomsListAdd.setEnabled(true);
+                String[] allRooms = Main.getRoomsAvailable(dateAddText.getText(), timesListAdd.getSelectedItem().toString());
+                //String[] allRooms = Main.getAllRooms();
+                for (String room : allRooms)
+                    roomsListAdd.addItem(room);
+            }
+            else {
+                String[] options = {"Add & Check Date First"};
+                roomsListAdd.addItem(options[0]);
+                roomsListAdd.setEnabled(false);
+            }
         }
         
         /*public JComboBox updateListOfStaff(JComboBox list) {

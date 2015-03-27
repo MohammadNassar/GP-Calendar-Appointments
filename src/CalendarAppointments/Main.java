@@ -53,19 +53,24 @@ public class Main {
         //getRoomsAvailable("2014-05-02","");
         //getRoomsAvailable("2014-05-02", "");
         //int[] indeces = getColumnIndecesForTimeSlot("09:00-09:45"); for (int index : indeces) System.out.println(index);
-        print(getTimesFromRoom("2014-05-02"));
+        //print(getTimesFromRoom("2014-05-02"));
+        //int[] nums = {1,10,5,4,2}; sort(nums); print(nums);
+        //int[][] nums = {{10,9,5,6},{1,5,3},{44,34,33}}; print(nums); print(sort(nums));
+        //String[] arr = {"mohammad", "ali", "umar", "matt", "jawad"}; print(arr); sort(arr); print(arr);
+        //String[][] arr = {{"mohammad","ali"},{"umar","matt"},{"ahmed","jawad"}}; print(arr); sort(arr); print(arr);
+        //String[][] arr = {{"1","mohammad"},{"2","bob"},{"3","ahmed"}}; print(arr); sortByVal(arr); print(arr);
     }
     
     public static void execute (String instruction) { // This method can be used for SQL queries that do not return a value, e.g. INSERT, UPDATE and REMOVE.
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         System.out.println(instruction);
         connect.execute(instruction);
     }
     
     public static String[][] getAppointments(String[] line) {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         
         String query = "SELECT * FROM appointments ";
         boolean condition = false; // Initially assume that some properties have been set.
@@ -110,12 +115,12 @@ public class Main {
     
     public static Object[][] exchangePatientIDsWithPatientNames(Object[][] table) {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         return connect.exchangePatientIDsWithPatientNames(table);
     }
     public static Object[][] exchangeStaffIDsWithStaffNames(Object[][] table) {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         return connect.exchangePatientIDsWithPatientNames(table);
     }
     
@@ -128,7 +133,7 @@ public class Main {
     
     public static String[][] getDaysOff(String[] line) {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         
         String query = "SELECT * FROM gpdaysoff ";
         boolean condition = false; // Initially assume that some properties have been set.
@@ -170,7 +175,7 @@ public class Main {
     
     public static void addAppointment(String[] array) {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         
         ArrayList<String> list = new ArrayList<String>();
         for (int i=0; i<array.length; i++) {
@@ -193,7 +198,7 @@ public class Main {
     
     public static void editAppointment(String[] array, String id) {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         
         String[] columnName = {"appType", "patientId", "appWithStaffId", "date", "startTime", "finishTime", "room"};
         
@@ -218,7 +223,7 @@ public class Main {
     
     public static String[][] getKeyAndValOfPatients() {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         String[][] array = connect.getKeyAndValOfPatients();
         return array;
     }
@@ -244,20 +249,20 @@ public class Main {
     
     public static boolean recordExists(String instruction) {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         return connect.recordExists(instruction);
     }
     
     public static String[] getOneColumnFromTable(String str) {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         
         return connect.getOneColumnFromTable(str);
     }
     
     public static boolean gpIsOpenOn(String date) {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         
         String[] dates = connect.getOneColumnFromTable("SELECT day FROM `gpdaysoff`;");
         
@@ -346,7 +351,7 @@ public class Main {
     
     public static void setAvailability(boolean availableOrNot, String timeSlot, String docOrNurse, String date) {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         String availability = (availableOrNot)? "'y' " : "'n' ";
         String query = "UPDATE doctorsandnurses SET ";
         String[] columnNames = getColumnNamesForTimeSlot(timeSlot);
@@ -363,7 +368,7 @@ public class Main {
     
     public static void createAvailability(String timeSlot, String docOrNurse, String date) {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         String availability = " 'n'";
         String query = "INSERT INTO doctorsandnurses (name, date, ";
         String[] columnNames = getColumnNamesForTimeSlot(timeSlot);
@@ -543,7 +548,7 @@ public class Main {
     
     public static String[] getTimeSlotsAvailable(String docOrNurse, String date, String duration) {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         
         String[] timeSlotsOptions = getAllTimeSlotsForDuration(duration, date);
         String[] timesAvailableForDocOrNurse = connect.getTimesFromDoctorsandnurses(docOrNurse, date);
@@ -591,7 +596,7 @@ public class Main {
     
     public static String[] getTimeSlotsAvailable(String docOrNurse, String date) { // OLD
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         
         String[] timeSlotsOptions = getAllTimeSlots(date);
         String[] timesAvailableForDocOrNurse = connect.getTimesFromDoctorsandnurses(docOrNurse, date);
@@ -781,7 +786,7 @@ public class Main {
     
     public static String[] getAllRooms() {
         
-        /*DatabaseConnection connect = new DatabaseConnection();
+        /*DatabaseConnection connect = DatabaseConnection.getInstance();
         String[] allRooms = connect.getOneColumnFromTable("SELECT roomId FROM room ;");*/
         String[] allRooms = {"A001", "A002", "A003", "A004", "A005", "A006", "A007", "A008", "A009", "A010", 
                              "A101", "A102", "A103", "A104", "A105", "A106", "A107", "A108", "A109", "A110" 
@@ -805,7 +810,7 @@ public class Main {
     // Retrieve records from the database
     public static String[][] getTimesFromRoom(String date) {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         //String[] allRooms = getAllRooms();
         String query = "SELECT " +
         "a9,b9,c9,d9,a10,b10,c10,d10,a11,b11,c11,d11,a12,b12,c12,d12,a13,b13,c13,d13,a14,b14,c14,d14,a15,b15,c15,d15,a16,b16,c16,d16,a17,b17 " +
@@ -835,15 +840,16 @@ public class Main {
         ArrayList<String> toConsiderList = new ArrayList<String>();
         // Add the rooms that need to be checked for availability
         System.out.println(timesFromRoom.length + " " + timesFromRoom[0].length);
+        // Add into 'toConiserList' the rooms you found in the DB table: 'room', as their availability time slots need to be checked.
         if (timesFromRoom.length > 0) {
             for (int i=0; i<timesFromRoom.length; i++) {
                 toConsiderList.add(timesFromRoom[i][roomsColumn]);
             }
         }
-        // Add the OK rooms
-        for (int i=0; i<timesFromRoom.length; i++) {
-            if(! toConsiderList.contains(timesFromRoom[i][roomsColumn]))
-                OKList.add(timesFromRoom[i][roomsColumn]);
+        // Add the OK rooms (i.e. the ones that currently do not exist inside 'toConsiderList')
+        for (int i=0; i<allRooms.length; i++) {
+            if(! toConsiderList.contains(allRooms[i]))
+                OKList.add(allRooms[i]);
         }
         // Check the toConsider rooms for availability at specified time slot.
         for (int i=0; i<toConsiderList.size(); i++) {
@@ -851,13 +857,13 @@ public class Main {
             findRow : for(int j=0; j<timesFromRoom.length; j++) {
                 if (timesFromRoom[j][roomsColumn].equals(toConsiderList.get(i))) {
                     boolean flag = true;
-                    for (int k=columnIndeces[0]; k<columnIndeces.length-1; k++) {
-                        if (!timesFromRoom[j][k].equalsIgnoreCase("y"))
+                    for (int k=0; k<columnIndeces.length; k++) {
+                        if (!timesFromRoom[j][columnIndeces[k]].equalsIgnoreCase("y"))
                             flag = false;
                     }
                     if (flag)
                         OKList.add(toConsiderList.get(i));
-                    break findRow;
+                    //break findRow;
                 }
             }
         }
@@ -911,6 +917,25 @@ public class Main {
                 System.out.print(array[i][j] + "\t");
             }
             System.out.println();
+        }
+    }
+    
+    public static void print(int[] array) {
+        
+        for (int i=0; i<array.length; i++) {
+            System.out.println(array[i] + "\t");
+        }
+    }
+    
+    public static void print(int[][] array) {
+        
+        for (int i=0; i<array.length; i++) {
+            if(array.length>0) {
+                for(int j=0; j<array.length; j++) {
+                    System.out.print(array[i][j]+"\t");
+                }
+                System.out.println(array);
+            }
         }
     }
     
@@ -1011,15 +1036,87 @@ public class Main {
         return array;
     }
     
+    public static String[] sort(String[] array) {
+        
+        boolean sorted = false;
+        while(! sorted) {
+            sorted = true;
+            for (int i=0; i<array.length-1; i++) {
+                if (array[i].compareTo(array[i+1]) > 0) {
+                    String temp = array[i+1];
+                    array[i+1] = array[i];
+                    array[i] = temp;
+                    sorted = false;
+                }
+            }
+        }
+        return array;
+    }
+    
+    public static String[][] sort(String[][] array) {
+        
+        for (int i=0; i<array.length; i++) {
+            sort(array[i]);
+        }
+        return array;
+    }
+    
+    public static String[][] sortByVal(String[][] array) {
+        
+        final int key = 0;
+        final int val = 1;
+        boolean sorted = false;
+        while(! sorted) {
+            sorted = true;
+            for (int i=0; i<array.length-1; i++) {
+                if (array[i][val].compareTo(array[i+1][val]) > 0) {
+                    String tempVal = array[i+1][val];
+                    String tempKey = array[i+1][key];
+                    array[i+1][val] = array[i][val];
+                    array[i+1][key] = array[i][key];
+                    array[i][val] = tempVal;
+                    array[i][key] = tempKey;
+                    sorted = false;
+                }
+            }
+        }
+        return array;
+    }
+    
+    public static int[] sort(int[] array) {
+        
+        boolean sorted = false;
+        while (!sorted) {
+            sorted = true;
+            for (int i=0; i<array.length-1; i++) {
+                if (array[i] > array[i+1]) {
+                    int temp = array[i+1];
+                    array[i+1] = array[i];
+                    array[i] = temp;
+                    sorted = false;
+                }
+            }
+        }
+        return array;
+    }
+    
+    public static int[][] sort(int[][] array) {
+        
+        for (int i=0; i<array.length; i++) {
+            sort(array[i]);
+        }
+        return array;
+    }
+    
     public static void close() {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         connect.close();
     }
     
     public static void getAppointmentsNoGUI() {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         
         String query = "SELECT * FROM appointments ";
         boolean condition = false; // Initially assume that some properties have been set.
@@ -1066,7 +1163,7 @@ public class Main {
     
     public static void addAppointmentNoGUI() {
         
-        DatabaseConnection connect = new DatabaseConnection();
+        DatabaseConnection connect = DatabaseConnection.getInstance();
         
         /*String query = "INSERT INTO appointments " + 
                             "(appType, patientId, appWithStaffId, date, startTime, finishTime)" + 
