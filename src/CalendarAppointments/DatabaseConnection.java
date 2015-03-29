@@ -12,7 +12,7 @@ public class DatabaseConnection {
     private Statement statement;
     private ResultSet result;
     
-    private DatabaseConnection() {
+    public DatabaseConnection() {
         
         String loginUser = "SEGA";
         String loginPassword = "";
@@ -177,6 +177,9 @@ public class DatabaseConnection {
     
     public Object[][] exchangePatientIDsWithPatientNames(Object[][] array) {
         
+        if (isEmpty(array))
+            return array; // As it without processing
+        
         int col = 2;
         for (int i=0; i<array.length; i++) {
             String id = array[i][col].toString();
@@ -207,6 +210,9 @@ public class DatabaseConnection {
     }
     
     public Object[][] exchangeStaffIDsWithStaffNames(Object[][] array) {
+        
+        if (isEmpty(array))
+            return array; // As it without processing
         
         int col = 3;
         for (int i=0; i<array.length; i++) {
@@ -273,14 +279,47 @@ public class DatabaseConnection {
         
         return rowsInTable;
     }
+    // Retrieve ANY records from the database
+    public String[] getKeyAndValOfDocsAndNurses(String query) {
+        
+        String[] rowsInTable = new String[0];
+        
+        try {
+            // Perform the query ==> (Execute the SQL statement and save the returned value in variable 'result').
+            result = statement.executeQuery(query);
+            
+            ArrayList<String> list = new ArrayList<String>();
+            int index = 0;
+            while (result.next()) {
+                
+                // Concatenate results retrieved from table and print them.
+                String day = result.getString("StaffID");
+                
+                list.add(day);
+                index++;
+            }
+            
+            if (list.size() > 0) {
+                rowsInTable = new String[list.size()];
+                for (int i=0; i<list.size(); i++) {
+                    rowsInTable[i] = list.get(i);
+                }
+            }
+            
+        } catch (SQLException s) {
+            System.out.println("Unable to execute query. ==> ("+s+")");
+        }
+        
+        return rowsInTable;
+    }
     
     // Retrieve records from the database
-    public String[] getTimesFromDoctorsandnurses(String name, String date) {
+    public String[] getTimesFromDoctorsandnurses(String staffID, String date) {
         
         String query = "SELECT " +
         "a9,b9,c9,d9,a10,b10,c10,d10,a11,b11,c11,d11,a12,b12,c12,d12,a13,b13,c13,d13,a14,b14,c14,d14,a15,b15,c15,d15,a16,b16,c16,d16,a17,b17 " +
         "FROM " +
-        "doctorsandnurses WHERE name LIKE '" + name + "' AND date LIKE '" + date + "' ;";
+        "doctorsandnurses WHERE name = '" + staffID + "' AND date LIKE '" + date + "' ;";
         
         System.out.println(query);
         
@@ -469,17 +508,89 @@ public class DatabaseConnection {
         
         return rowsInTable;
     }
-    
-    public String[][] getTable(String instruction) { // To improve.
+    // Retrieve one row from a table
+    public String[] getOneRowFromTable(String tableName, String[] columnNames, String extraQuery) {
         
-        String[][] table = {};
-        System.out.println(instruction);
-        try {
-            statement.executeQuery(instruction);
+        String query = "SELECT ";
+        for (int i=0; i<columnNames.length; i++) {
+            if (i != columnNames.length-1)
+                query += columnNames[i] + ", ";
+            else
+                query += columnNames[i] + " ";
+        }
+        query += "FROM " + tableName + " ";
+        query += (!extraQuery.equals("")) ? extraQuery : ";"; System.out.println(query);
+        String[] rowToReturn = {};
+        try { // Perform the query ==> (Execute the SQL statement and save the returned value in an array).
+            result = statement.executeQuery(query);
+            
+            ArrayList<String> list = new ArrayList<String>();
+            int index = 0;
+            while (result.next()) {
+                
+                for (int i=0; i<columnNames.length; i++) {
+                    String val = result.getString(columnNames[i]);
+                    list.add(val);
+                }
+                index++;
+            }
+            rowToReturn = convertArrayListToArray(list);
         } catch (SQLException s) {
             System.out.println("Unable to execute query. ==> ("+s+")");
         }
-        return table;
+        return rowToReturn;
+    }
+    
+    // Retrieve records from the database
+    public String[][] getTable(String tableName, String[] columnNames, String extraQuery) {
+        
+        String query = "SELECT ";
+        for (int i=0; i<columnNames.length; i++) {
+            if (i != columnNames.length-1)
+                query += columnNames[i] + ", ";
+            else
+                query += columnNames[i] + " ";
+        }
+        query += "FROM " + tableName + " ";
+        query += (!extraQuery.equals("")) ? extraQuery : ";"; System.out.println(query);
+        String[][] tableToReturn = {{}};
+        try { // Perform the query ==> (Execute the SQL statement and save the returned value in a 2 dimensional array).
+            result = statement.executeQuery(query);
+            
+            ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
+            int index = 0;
+            while (result.next()) {
+                
+                list.add(new ArrayList<String>()); // Concatenate results retrieved from the table so far.
+                for (int i=0; i<columnNames.length; i++) {
+                    String val = result.getString(columnNames[i]);
+                    list.get(index).add(val);
+                }
+                index++;
+            }
+            tableToReturn = convert2DArrayListTo2DArray(list);
+        } catch (SQLException s) {
+            System.out.println("Unable to execute query. ==> ("+s+")");
+        }
+        return tableToReturn;
+    }
+    
+    public static boolean isEmpty(Object[] array) {
+        
+        if (array.length == 0)
+            return true;
+        return false;
+    }
+    
+    public static boolean isEmpty(Object[][] array) {
+        
+        if (array.length == 0)
+            return true;
+        else {
+            if (array[0].length == 0)
+                return true;
+        }
+        return false;
     }
     
     public void close() {

@@ -8,7 +8,7 @@ public class TableModel extends AbstractTableModel {
     private String[] columnNames = {"App.ID", "Type", "Patient ID", "Satff ID", "Date", "Start Time", "Finish Time", "Room", "Summary"};
     //private String[] columnNames = {"Edit/Remove", "App.ID", "Type", "Patient ID", "Satff ID", "Date", "Start Time", "Finish Time", "Room", "Summary"};
     private String[] filter = {"", "", "", "", "", "", "", "", ""};
-    private Object[][] tableData, friendlyTableData;
+    private Object[][] tableData, friendlyTableData, emptyTable = {{"","","","","","","","",""}};
     private Object[] patientsIDs, staffIDs;
     
     public TableModel() {
@@ -102,6 +102,9 @@ public class TableModel extends AbstractTableModel {
     
     public Object getValueAt(int row, int column) {
         
+        if (Main.isEmpty(tableData))
+            //return new String[][]{{"","","","","","","","",""}};
+            tableData = new String[][]{{"","","","","","","","",""}};
         return tableData[row][column];
     }
     

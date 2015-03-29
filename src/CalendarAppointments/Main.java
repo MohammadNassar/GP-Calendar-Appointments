@@ -59,6 +59,11 @@ public class Main {
         //String[] arr = {"mohammad", "ali", "umar", "matt", "jawad"}; print(arr); sort(arr); print(arr);
         //String[][] arr = {{"mohammad","ali"},{"umar","matt"},{"ahmed","jawad"}}; print(arr); sort(arr); print(arr);
         //String[][] arr = {{"1","mohammad"},{"2","bob"},{"3","ahmed"}}; print(arr); sortByVal(arr); print(arr);
+        //print(getKeyAndValOfDocsAndNurses());
+        //print(checkDailyAvailabilityOfStaff("1", "2014-03-10"));
+        //boolean[] arr = checkDailyAvailabilityOfStaff("1", "2014-03-10"); for (boolean val : arr) System.out.println(val);
+        //System.out.println(isOnHoliday("1","2014-04-20"));
+        //System.out.println(isAbsent("1","2014-04-20"));
     }
     
     public static void execute (String instruction) { // This method can be used for SQL queries that do not return a value, e.g. INSERT, UPDATE and REMOVE.
@@ -129,6 +134,63 @@ public class Main {
         Object[][] arrayToReturn = {};
         System.arraycopy(array, 0, arrayToReturn, 0, array.length);
         return arrayToReturn;
+    }
+    
+    public static boolean[] checkDailyAvailabilityOfStaff(String staffID, String date) {
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        
+        int morning, afternoon;
+        int dayOfWeek = getDayOfWeek(date); System.out.println(dayOfWeek);
+        switch (dayOfWeek) {
+            case 2 : morning = 1; afternoon = 2; break; // If day is a 'Monday'.
+            case 3 : morning = 3; afternoon = 4; break; // If day is a 'Tuesday'.
+            case 4 : morning = 5; afternoon = 6; break; // If day is a 'Wednesday'.
+            case 5 : morning = 7; afternoon = 8; break; // If day is a 'Thursday'.
+            case 6 : morning = 9; afternoon = 10; break; // If day is a 'Friday'.
+            case 7 : morning = 11; afternoon = 0; break; // If day is a 'Saturday'.
+            default : morning = 0; afternoon = 0; // If day is a 'Sunday'.
+        }
+        String tableName = "StaffWorkingHours";
+        String[] columnNames = {"StaffID", "WorkingHoursID"};
+        String extraQuery = "WHERE StaffID = "+ staffID +" and (WorkingHoursID = "+ morning +" or WorkingHoursID = "+ afternoon +") ;";
+        String[][] table = connect.getTable(tableName, columnNames, extraQuery);
+        print(table);
+        if (table.length == 2)
+            return new boolean[]{true, true};
+        else if (table.length == 0 || (table.length == 1 && table[0].length == 0))
+            //System.out.println(table.length +" "+table[0].length);
+            return new boolean[]{false, false};
+        else
+            return new boolean[]{table[0][1].equals(Integer.toString(morning)), table[0][1].equals(Integer.toString(afternoon))};
+    }
+    
+    public static boolean isOnHoliday(String staffID, String date) {
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        
+        String tableName = "Holidays";
+        String[] columnNames = {"StaffID", "Date"};
+        String extraQuery = "WHERE StaffID = '"+ staffID +"' AND Date = '"+ date +"' ;";
+        
+        String[] array = connect.getOneRowFromTable(tableName, columnNames, extraQuery);
+        if (array.length == 0)
+            return false;
+        return true;
+    }
+    
+    public static boolean isAbsent(String staffID, String date) {
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        
+        String tableName = "Absences";
+        String[] columnNames = {"StaffID", "Date"};
+        String extraQuery = "WHERE StaffID = '"+ staffID +"' AND Date = '"+ date +"' ;";
+        
+        String[] array = connect.getOneRowFromTable(tableName, columnNames, extraQuery);
+        if (array.length == 0)
+            return false;
+        return true;
     }
     
     public static String[][] getDaysOff(String[] line) {
@@ -249,7 +311,7 @@ public class Main {
     
     public static boolean recordExists(String instruction) {
         
-        DatabaseConnection connect = DatabaseConnection.getInstance();
+        DatabaseConnection connect = DatabaseConnection.getInstance();print(instruction);
         return connect.recordExists(instruction);
     }
     
@@ -392,6 +454,49 @@ public class Main {
         connect.execute(query);
     }
     
+    public static void setRoomsAvailability(boolean availableOrNot, String room, String date, String timeSlot) {
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        String availability = (availableOrNot)? "'y' " : "'n' ";
+        String query = "UPDATE room SET ";
+        String[] columnNames = getColumnNamesForTimeSlot(timeSlot);
+        for (int i=0; i<columnNames.length; i++) {
+            if (i != columnNames.length-1) // If NOT at the last index or element in the array.
+                query += columnNames[i] + " = " + availability + ", ";
+            else
+                query += columnNames[i] + " = " + availability;
+        }
+        query += "WHERE room = '" + room + "' AND date = '" + date + "' ;";
+        //System.out.println(query);
+        connect.execute(query);
+    }
+    
+    public static void createRoomsAvailability(String room, String date, String timeSlot) {
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        String availability = " 'n'";
+        String query = "INSERT INTO room (room, date, ";
+        String[] columnNames = getColumnNamesForTimeSlot(timeSlot);
+        for (int i=0; i<columnNames.length; i++) {
+            if (i != columnNames.length-1) // If NOT at the last index or element in the array.
+                query += columnNames[i] + ", ";
+            else
+                query += columnNames[i];
+        }
+        query += ") VALUES ('";
+        query += room + "', '" + date +"',";
+        for (int i=0; i<columnNames.length; i++) {
+            if (i != columnNames.length-1) // If NOT at the last index or element in the array.
+                query += availability + ",";
+            else
+                query += availability;
+        }
+        
+        query += ");";
+        //System.out.println(query);
+        connect.execute(query);
+    }
+    
     public static String getColumnNameForTimeSlot(String timeSlot) { // OLD
         String[] timeSlots = getAllTimeSlots();
         String[] columnNames = getAllColumnNamesForTimeSlots();
@@ -496,6 +601,35 @@ public class Main {
         return timeSlots;
     }
     
+    public static String[] filterBasedOnGeneralDailyAvailabilityOfStaff(String staffID, String date, String[] timeSlots) {
+        // Hence this method get called by method: 'getTimeSlotsAvailable'
+        // Hence the times slots array received here (which originally came from method: 'getAllTimeSlotsForDuration') are either from 9-12 or (all) 9-17.30
+        // Here I can filter them based on general daily availability of staff memebers.
+        // If times slots array is already of size 12 (i.e. from 9 to 12), then it is the previous method already found out that this day is a Saturday.
+        String[] filteredTimeSlots;
+        if (timeSlots.length == 12) { // Then it is a Saturday so ONLY check the MORNING availability of staff.
+            boolean[] findOut = checkDailyAvailabilityOfStaff(staffID, date);
+            if (! findOut[0]) // If staff is not working on a Saturday morning, else then just keep the main 12 times slots (of the morning) as they are.
+                timeSlots = new String[0];
+        }
+        else {
+            boolean[] findOut = checkDailyAvailabilityOfStaff(staffID, date);
+            if (findOut[0] && ! findOut[1]) { // If staff works in the morning, but not in the afternoon.
+                filteredTimeSlots = new String[12];
+                System.arraycopy(timeSlots, 0, filteredTimeSlots, 0, 12);
+            }
+            else if (! findOut[0] && findOut[1]) { // If staff does NOT work in the morning, but works in the afternoon.
+                filteredTimeSlots = new String[timeSlots.length-12]; // That is (34 - 12) i.e. 22 time slots of the afternoon.
+                System.arraycopy(timeSlots, 12, filteredTimeSlots, 0, timeSlots.length-12);
+            }
+            else if (! findOut[0] && ! findOut[1]) { // If staff neither works in the morning, nor in the afternoon.
+                filteredTimeSlots = new String[0];
+            }
+            // Else then staff works in both the morning and in the afternoon too, so just leave the array as it is, (i.e. with all the 34 time slots).
+        }
+        return timeSlots;
+    }
+    
     public static String[] getAllDurations() {
         
         String[] durations = {"15 Minutes", "30 Minutes", "45 Minutes", "60 Minutes"};
@@ -546,12 +680,28 @@ public class Main {
         return allYears;
     }
     
-    public static String[] getTimeSlotsAvailable(String docOrNurse, String date, String duration) {
+    public static String[] getTimeSlotsAvailable(String docOrNurseID, String date, String duration) {
         
+        // This method is called from the GUI class ONLY IF a record exists in the table 'doctorsandnurses' where staffID = staffID given and date = date given.
         DatabaseConnection connect = DatabaseConnection.getInstance();
         
-        String[] timeSlotsOptions = getAllTimeSlotsForDuration(duration, date);
-        String[] timesAvailableForDocOrNurse = connect.getTimesFromDoctorsandnurses(docOrNurse, date);
+        String[] timeSlotsOptions = getAllTimeSlotsForDuration(duration, date); print(timeSlotsOptions);
+        timeSlotsOptions = filterBasedOnGeneralDailyAvailabilityOfStaff(docOrNurseID, date, timeSlotsOptions); print(timeSlotsOptions);
+        String[] allTimesAvailableForDocOrNurse = connect.getTimesFromDoctorsandnurses(docOrNurseID, date);
+        String[] timesAvailableForDocOrNurse = {};
+        
+        if (timeSlotsOptions.length == 0) // Then staff is not available for the whole day.
+            return new String[0];
+        else if (timeSlotsOptions.length == 12) { // Then staff is ONLY avialble in the morning.
+            timesAvailableForDocOrNurse = new String[12]; System.out.println("timeSlotsOptions.length == 12");
+            System.arraycopy(allTimesAvailableForDocOrNurse, 0, timesAvailableForDocOrNurse, 0, 12);
+        }
+        else if (timeSlotsOptions.length == 22) { // Then staff is ONLY avialble in the afternoon.
+            timesAvailableForDocOrNurse = new String[22]; System.out.println("timeSlotsOptions.length == 22");
+            System.arraycopy(allTimesAvailableForDocOrNurse, 12, timesAvailableForDocOrNurse, 0, 22);
+        }
+        else // Else then just keep and copy the same 34 times slots.
+            timesAvailableForDocOrNurse = allTimesAvailableForDocOrNurse;
         
         ArrayList<String> timeSlotsAvailableArrayList = new ArrayList<String>();
         String[] timeSlotsAvailableArray;
@@ -834,6 +984,8 @@ public class Main {
         String[][] timesFromRoom = getTimesFromRoom(date);
         int[] columnIndeces = getColumnIndecesForTimeSlot(timeSlot);
         String[] allRooms = getAllRooms();
+        if (isEmpty(timesFromRoom)) // If you did not find a row in table: 'room' that has the specified date.
+            return allRooms;
         String[] roomsAvailableToReturn = {};
         int roomsColumn = 34;
         ArrayList<String> OKList = new ArrayList<String>();
@@ -869,6 +1021,7 @@ public class Main {
         }
         
         roomsAvailableToReturn = convertArrayListToArray(OKList);
+        sort(roomsAvailableToReturn);
         return roomsAvailableToReturn;
     }
     
@@ -1106,6 +1259,76 @@ public class Main {
             sort(array[i]);
         }
         return array;
+    }
+    
+    public static boolean isEmpty(Object[] array) {
+        
+        if (array.length == 0)
+            return true;
+        return false;
+    }
+    
+    public static boolean isEmpty(Object[][] array) {
+        
+        if (array.length == 0)
+            return true;
+        else {
+            if (array[0].length == 0)
+                return true;
+        }
+        return false;
+    }
+    
+    public static String[][] getKeyAndValOfDocsAndNurses() { // Return keys of staff members who are doctors and/or nurses.
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        
+        String query = "    select StaffID from StaffRole where exists\n" +
+                            "(select StaffID From Staff where StaffRole.RoleID = 1 or StaffRole.RoleID = 2)\n" +
+                            ";";
+        String[] keys = connect.getKeyAndValOfDocsAndNurses(query);
+        keys = removeRepeated(keys);
+        // Retrieve names for the keys we have
+        String tableName = "Staff";
+        String[] columnNames = {"StaffID", "Forename", "Surname"};
+        String extraQuery = "WHERE ";
+        for (int i=0; i<keys.length; i++) {
+            if (i != keys.length-1)
+                extraQuery += "StaffID = " + keys[i] + " or ";
+            else
+                extraQuery += "StaffID = " + keys[i] + " ;";
+        }
+        String[][] docsAndNurses = connect.getTable(tableName, columnNames, extraQuery);
+        // Join forenames with surnames
+        ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
+        for (int i=0; i<docsAndNurses.length; i++) {
+            list.add(new ArrayList<String>());
+            list.get(i).add(docsAndNurses[i][0]);
+            list.get(i).add(docsAndNurses[i][1] + " " + docsAndNurses[i][2]);
+        }
+        docsAndNurses = convert2DArrayListTo2DArray(list);
+        return docsAndNurses;
+    }
+    
+    public static String[][] getKeyAndValOfDocsAndNursesOld() {
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        
+        String tableName = "Staff";
+        String[] columnNames = {"StaffID", "Forename", "Surname"};
+        
+        return connect.getTable(tableName, columnNames, "");
+    }
+    
+    public static String[] getPatientAndStaffWithThisAppID(String id) {
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        
+        String tableName = "appointments";
+        String[] columnNames = {"patientId", "appWithStaffId"};
+        String extraQuery = "WHERE appId = '" + id + "' ;";
+        
+        return connect.getOneRowFromTable(tableName, columnNames, extraQuery);
     }
     
     public static void close() {

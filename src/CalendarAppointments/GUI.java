@@ -52,8 +52,8 @@ public class GUI extends JFrame {
         private JTextField idAddText, typeAddText, patientAddText, staffAddText, dateAddText, startTimeAddText, finishTimeAddText;
         private JComboBox patientsListAdd, staffListAdd, durationsListAdd, timesListAdd, roomsListAdd;
         private JButton checkDateButton, submitAdd, resetAdd, cancelAdd;
-        private String timeSelectedAdd, dateLookedAt, typeChosenAdd = "", oldTimeSlot, oldStaff, oldDate, id;
-        private String[][] patientsKeyAndVal;
+        private String timeSelectedAdd, dateLookedAt, typeChosenAdd = "", oldTimeSlot, oldStaff, oldDate, oldRoom, id, oldPatient;
+        private String[][] patientsKeyAndVal, docsAndNursesKeyAndVal;
         
         // editAppFrame items
         private JFrame editAppFrame;
@@ -488,8 +488,12 @@ public class GUI extends JFrame {
             String rowInfo = rowDetails[rowDetails.length-1];
             
             oldTimeSlot = rowDetails[5];
-            oldStaff = rowDetails[3];
+            String patientAndStaff[] = Main.getPatientAndStaffWithThisAppID(id);
+            oldPatient = patientAndStaff[0];
+            //oldStaff = rowDetails[3];
+            oldStaff = patientAndStaff[1]; System.out.println(oldPatient + " " + oldStaff);
             oldDate = rowDetails[4];
+            oldRoom = rowDetails[6];
             
             editAppFrame = new JFrame("Appointment Details");
             editAppFrame.setVisible(true);
@@ -612,8 +616,9 @@ public class GUI extends JFrame {
 
             if (! dateAddText.getText().equals("")) {
                 //staffOptions = Main.getOneColumnFromTable("SELECT name FROM doctorsandnurses WHERE date LIKE '" + dateLookedAt + "' ;");
-                staffOptions = Main.getOneColumnFromTable("SELECT name FROM doctorsandnurses ;");
-                staffOptions = Main.removeRepeated(staffOptions);
+                /*staffOptions = Main.getOneColumnFromTable("SELECT name FROM doctorsandnurses ;"); staffOptions = Main.removeRepeated(staffOptions);*/
+                docsAndNursesKeyAndVal = Main.getKeyAndValOfDocsAndNurses();
+                staffOptions = Main.getAllValuesOnly(docsAndNursesKeyAndVal);
                 staffListAdd.setEnabled(true);
                 
                 for (String val : staffOptions)
@@ -634,8 +639,8 @@ public class GUI extends JFrame {
             
              // If date is not empty AND list of staff is not empty.
             if (! dateAddText.getText().equals("") && staffListAdd.getItemCount() != 0 && ! staffListAdd.getSelectedItem().equals("Add & Check Date First")) {
-                if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name LIKE '"+staffListAdd.getSelectedItem()+"' ;"))
-                    timesOptions = Main.getTimeSlotsAvailable((String)staffListAdd.getSelectedItem(), dateLookedAt, durationsListAdd.getSelectedItem().toString());
+                if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name = '"+Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex())+"' ;"))
+                    timesOptions = Main.getTimeSlotsAvailable(Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateLookedAt, durationsListAdd.getSelectedItem().toString());
                 else
                     timesOptions = Main.getAllTimeSlotsForDuration(durationsListAdd.getSelectedItem().toString(), dateAddText.getText());
                 timesListAdd.setEnabled(true);
@@ -672,7 +677,8 @@ public class GUI extends JFrame {
         public void updateListOfRooms() {
             
             roomsListAdd.removeAllItems();
-            if (timesListAdd.getItemCount() != 0 && ! timesListAdd.getSelectedItem().toString().equals("Add & Check Date First") && ! timesListAdd.getSelectedItem().toString().equals("No Available Time Slots")) { // If list of time slots is not empty.
+             // If list of time slots is not empty.
+            if (timesListAdd.getItemCount() != 0 && ! timesListAdd.getSelectedItem().toString().equals("Add & Check Date First") && ! timesListAdd.getSelectedItem().toString().equals("No Available Time Slots")) {
                 roomsListAdd.setEnabled(true);
                 String[] allRooms = Main.getRoomsAvailable(dateAddText.getText(), timesListAdd.getSelectedItem().toString());
                 //String[] allRooms = Main.getAllRooms();
@@ -717,7 +723,7 @@ public class GUI extends JFrame {
             
             if (! dateEditText.getText().equals("")) {
                 if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateEditText.getText()+"' AND  name LIKE '"+staffListEdit.getSelectedItem()+"' ;"))
-                    timesOptions = Main.getTimeSlotsAvailable((String)staffListAdd.getSelectedItem(), dateLookedAt, durationsListAdd.getSelectedItem().toString());
+                    timesOptions = Main.getTimeSlotsAvailable(Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateLookedAt, durationsListAdd.getSelectedItem().toString());
                 else
                     timesOptions = Main.getAllTimeSlotsForDuration(durationsListAdd.getSelectedItem().toString());
                 list.setEnabled(true);
@@ -753,12 +759,15 @@ public class GUI extends JFrame {
             String timeSlot1 = ((String) appTable.getModel().getValueAt(row, 5)).substring(0, 5);
             String timeSlot2 = appTable.getModel().getValueAt(row, 6).toString().substring(0, 5);
             String timeSlot = timeSlot1 + "-" + timeSlot2;
+            String room = appTable.getModel().getValueAt(row, 7).toString();
+            String summary = appTable.getModel().getValueAt(row, 8).toString();
             
             /*JOptionPane.showMessageDialog(null, id + "\n" + type + "\n" + patient + "\n" + date + "\n" + 
                                                 staff + "\n" + timeSlot1 + "\n" + timeSlot2 + "\n" + timeSlot + "\n");*/
             
             String rowInfo = "Patient ID:\t\t" + id + "\nAppointment Type:\t" + type + "\nPatient Name:\t\t" + patient + 
-                    "\nDate:\t\t" + date + "\nDoc/Nurse Name:\t" + staff + "\nAppointment Time Slot:\t" + timeSlot + "\n";
+                    "\nDate:\t\t" + date + "\nDoc/Nurse Name:\t" + staff + "\nAppointment Time Slot:\t" + timeSlot + 
+                    "\nRoom:\t\t" + room + "\nSummary:\t\t" + summary + "\n";
             
             /*idEditText.setText(id);
             if (type.equalsIgnoreCase("routine"))
@@ -773,7 +782,7 @@ public class GUI extends JFrame {
             timesListEdit.removeAllItems();
             staffListEdit.addItem(staff);
             timesListEdit.addItem(timeSlot);*/
-            return new String[] {id, type, patient, staff, date, timeSlot, rowInfo};
+            return new String[] {id, type, patient, staff, date, timeSlot, room, summary, rowInfo};
         }
         
 	private class Listener implements ActionListener, ItemListener, MouseListener {
@@ -899,8 +908,12 @@ public class GUI extends JFrame {
                         }
                         else if (e.getSource() == updateButton) {
                             
-                            if (appTable.getSelectedRow() > -1)
-                                editAppFrame();
+                            if (appTable.getSelectedRow() > -1) {
+                                if (appTable.getModel().getValueAt(appTable.getSelectedRow(), 0).toString().equals(""))
+                                    JOptionPane.showMessageDialog(null, "No Records Available !!");
+                                else
+                                    editAppFrame();
+                            }
                             else
                                 JOptionPane.showMessageDialog(null, "Please select an appointment from the table first !!");
                         }
@@ -944,8 +957,10 @@ public class GUI extends JFrame {
                                 msg += "- Add a correct date\n";
                             if (staffListAdd.getSelectedItem().equals("Add & Check Date First") || staffListAdd.getSelectedItem().equals("") || staffListAdd.getSelectedItem().equals(null))
                                 msg += "- Select staff\n";
-                            if (timesListAdd.getSelectedItem().equals("Add & Check Date First") || timesListAdd.getSelectedItem().equals("") || staffListAdd.getSelectedItem().equals(null))
+                            if (timesListAdd.getSelectedItem().equals("Add & Check Date First") || timesListAdd.getSelectedItem().equals("") || timesListAdd.getSelectedItem().equals(null))
                                 msg += "- Select a timeslot\n";
+                            if (roomsListAdd.getSelectedItem().equals("Add & Check Date First") || roomsListAdd.getSelectedItem().equals("") || roomsListAdd.getSelectedItem().equals(null))
+                                msg += "- Select a room\n";
                             if (msg.equals(""))
                                 incomplete = false;
                             else
@@ -960,7 +975,7 @@ public class GUI extends JFrame {
                                         typeChosenAdd,
                                         //patientAddText.getText(),
                                         Main.getKey(patientsKeyAndVal, patientsListAdd.getSelectedIndex()),
-                                        staffListAdd.getSelectedItem().toString(),
+                                        Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()),
                                         dateAddText.getText(),
                                         timeSlots[0],
                                         timeSlots[1],
@@ -968,15 +983,20 @@ public class GUI extends JFrame {
                                     };
                                     Main.addAppointment(array);
 
-                                    // Update availability timeslots
-                                    if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name LIKE '"+staffListAdd.getSelectedItem()+"' ;")) {
-                                        //Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +" = 'n' WHERE name = '"+ staffListAdd.getSelectedItem().toString() +"' AND date = '"+ dateAddText.getText() +"' ;");
-                                        Main.setAvailability(false, timesListAdd.getSelectedItem().toString(), staffListAdd.getSelectedItem().toString(), dateAddText.getText());
+                                    // Update availability timeslots of 'doctors and nurses'
+                                    if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name = '"+Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex())+"' ;")) {
+                                        //Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +" = 'n' WHERE name = '"+ Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()) +"' AND date = '"+ dateAddText.getText() +"' ;");
+                                        Main.setAvailability(false, timesListAdd.getSelectedItem().toString(), Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateAddText.getText());
                                     }
                                     else {
-                                        //Main.execute("INSERT INTO doctorsandnurses (name, date, "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +") VALUES ('"+ staffListAdd.getSelectedItem().toString() +"', '"+ dateAddText.getText() +"', '"+ "n" +"') ;");
-                                        Main.createAvailability(timesListAdd.getSelectedItem().toString(), staffListAdd.getSelectedItem().toString(), dateAddText.getText());
+                                        //Main.execute("INSERT INTO doctorsandnurses (name, date, "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +") VALUES ('"+ Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()) +"', '"+ dateAddText.getText() +"', '"+ "n" +"') ;");
+                                        Main.createAvailability(timesListAdd.getSelectedItem().toString(), Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateAddText.getText());
                                     }
+                                    if (Main.recordExists("SELECT * FROM room WHERE room = '"+ roomsListAdd.getSelectedItem().toString() +"' AND date = '"+ dateAddText.getText() +"' ;"))
+                                        Main.setRoomsAvailability(false, roomsListAdd.getSelectedItem().toString(), dateAddText.getText(), timesListAdd.getSelectedItem().toString());
+                                    else
+                                        Main.createRoomsAvailability(roomsListAdd.getSelectedItem().toString(), dateAddText.getText(), timesListAdd.getSelectedItem().toString());
+                                    
                                     JOptionPane.showConfirmDialog(null, "Appointment has been recorded successfully.", "Complete", JOptionPane.CLOSED_OPTION);
                                 }
                                 else { // Then it is in EDITING mode
@@ -986,20 +1006,28 @@ public class GUI extends JFrame {
                                         typeChosenAdd,
                                         //patientAddText.getText(),
                                         Main.getKey(patientsKeyAndVal, patientsListAdd.getSelectedIndex()),
-                                        staffListAdd.getSelectedItem().toString(),
+                                        Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()),
                                         dateAddText.getText(),
                                         timeSlots[0],
                                         timeSlots[1],
                                         roomsListAdd.getSelectedItem().toString()
                                     };
                                     Main.editAppointment(array, id);
-
-                                    // Update availability timeslots accordingly
+                                    
+                                    // Update availability timeslots of 'doctors and nurses' accordingly
                                     //Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(oldTimeSlot) +" = 'y' WHERE name = '"+ oldStaff +"' AND date = '"+ oldDate +"' ;");
                                     Main.setAvailability(true, oldTimeSlot, oldStaff, oldDate);
-                                    //Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +" = 'n' WHERE name = '"+ staffListAdd.getSelectedItem().toString() +"' AND date = '"+ dateAddText.getText() +"' ;");
-                                    Main.setAvailability(false, timesListAdd.getSelectedItem().toString(), staffListAdd.getSelectedItem().toString(), dateAddText.getText());
+                                    //Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +" = 'n' WHERE name = '"+ Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()) +"' AND date = '"+ dateAddText.getText() +"' ;");
+                                    if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name = '"+Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex())+"' ;"))
+                                        Main.setAvailability(false, timesListAdd.getSelectedItem().toString(), Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateAddText.getText());
+                                    else
+                                        Main.createAvailability(timesListAdd.getSelectedItem().toString(), Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateAddText.getText());
                                     
+                                    Main.setRoomsAvailability(true, oldRoom, oldDate, oldTimeSlot);
+                                    if (Main.recordExists("SELECT * FROM room WHERE room = '"+ roomsListAdd.getSelectedItem().toString() +"' AND date = '"+ dateAddText.getText() +"' ;"))
+                                        Main.setRoomsAvailability(false, roomsListAdd.getSelectedItem().toString(), dateAddText.getText(), timesListAdd.getSelectedItem().toString());
+                                    else
+                                        Main.createRoomsAvailability(roomsListAdd.getSelectedItem().toString(), dateAddText.getText(), timesListAdd.getSelectedItem().toString());
                                     JOptionPane.showConfirmDialog(null, "Appointment has been recorded successfully.", "Complete", JOptionPane.CLOSED_OPTION);
                                     editAppFrame.dispose();
                                     //editAppFrame.setEnabled(true);
@@ -1148,7 +1176,10 @@ public class GUI extends JFrame {
                         int col = appTable.getSelectedColumn();
                         String tableValue = (String) appTable.getModel().getValueAt(row, col);
                         JOptionPane.showMessageDialog(null, row + " " + col + "\n" + tableValue);*/
-                        editAppFrame();
+                        if (appTable.getModel().getValueAt(appTable.getSelectedRow(), 0).toString().equals(""))
+                            JOptionPane.showMessageDialog(null, "No Records Available !!");
+                        else
+                            editAppFrame();
                     }
                 }
 	}
