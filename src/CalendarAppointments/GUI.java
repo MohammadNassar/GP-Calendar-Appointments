@@ -639,10 +639,9 @@ public class GUI extends JFrame {
             
              // If date is not empty AND list of staff is not empty.
             if (! dateAddText.getText().equals("") && staffListAdd.getItemCount() != 0 && ! staffListAdd.getSelectedItem().equals("Add & Check Date First")) {
-                if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name = '"+Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex())+"' ;"))
-                    timesOptions = Main.getTimeSlotsAvailable(Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateLookedAt, durationsListAdd.getSelectedItem().toString());
-                else
-                    timesOptions = Main.getAllTimeSlotsForDuration(durationsListAdd.getSelectedItem().toString(), dateAddText.getText());
+                //if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name = '"+Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex())+"' ;"))
+                timesOptions = Main.getTimeSlotsAvailable(Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateLookedAt, durationsListAdd.getSelectedItem().toString());
+                //else timesOptions = Main.getAllTimeSlotsForDuration(durationsListAdd.getSelectedItem().toString());
                 timesListAdd.setEnabled(true);
                 
                 if (timesOptions.length > 0) {

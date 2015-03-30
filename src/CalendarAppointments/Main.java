@@ -64,6 +64,8 @@ public class Main {
         //boolean[] arr = checkDailyAvailabilityOfStaff("1", "2014-03-10"); for (boolean val : arr) System.out.println(val);
         //System.out.println(isOnHoliday("1","2014-04-20"));
         //System.out.println(isAbsent("1","2014-04-20"));
+        //print(getAllTimeSlotsForDuration("60"));
+        print(getTimeSlotsAvailable("1", "2014-05-02", "60"));
     }
     
     public static void execute (String instruction) { // This method can be used for SQL queries that do not return a value, e.g. INSERT, UPDATE and REMOVE.
@@ -158,7 +160,7 @@ public class Main {
         print(table);
         if (table.length == 2)
             return new boolean[]{true, true};
-        else if (table.length == 0 || (table.length == 1 && table[0].length == 0))
+        else if (isEmpty(table))
             //System.out.println(table.length +" "+table[0].length);
             return new boolean[]{false, false};
         else
@@ -541,33 +543,35 @@ public class Main {
         return startTimes;
     }
     
-    public static String[] getAllTimeSlotsForDuration(String durationStr, String date) {
+    public static String[] getAllTimeSlotsForDuration(String durationStr) {
         
         int duration = Integer.parseInt(durationStr.substring(0, 2));
+        String[] allTimeSlots = getAllTimeSlots();
+        
         String[] timeSlotsToReturn = new String[0];
         String[] startTimes = getAllStartTimes();
         String[] finishTimes = getAllFinishTimes();
         
         if (duration == 15) {
-            timeSlotsToReturn = new String[getAllTimeSlots(date).length];
+            timeSlotsToReturn = new String[allTimeSlots.length];
             for (int i=0; i<timeSlotsToReturn.length; i++) {
                 timeSlotsToReturn[i] = startTimes[i] + "-" + finishTimes[i];
             }
         }
         else if (duration == 30) {
-            timeSlotsToReturn = new String[getAllTimeSlots(date).length-1];
+            timeSlotsToReturn = new String[allTimeSlots.length-1];
             for (int i=0; i<timeSlotsToReturn.length; i++) {
                 timeSlotsToReturn[i] = startTimes[i] + "-" + finishTimes[i+1];
             }
         }
         else if (duration == 45) {
-            timeSlotsToReturn = new String[getAllTimeSlots(date).length-2];
+            timeSlotsToReturn = new String[allTimeSlots.length-2];
             for (int i=0; i<timeSlotsToReturn.length; i++) {
                 timeSlotsToReturn[i] = startTimes[i] + "-" + finishTimes[i+2];
             }
         }
         else if (duration == 60) {
-            timeSlotsToReturn = new String[getAllTimeSlots(date).length-3];
+            timeSlotsToReturn = new String[allTimeSlots.length-3];
             for (int i=0; i<timeSlotsToReturn.length; i++) {
                 timeSlotsToReturn[i] = startTimes[i] + "-" + finishTimes[i+3];
             }
@@ -683,53 +687,77 @@ public class Main {
     public static String[] getTimeSlotsAvailable(String docOrNurseID, String date, String duration) {
         
         // This method is called from the GUI class ONLY IF a record exists in the table 'doctorsandnurses' where staffID = staffID given and date = date given.
+        if (isOnHoliday(docOrNurseID, date))
+            return new String[0];
+        
+        if (isAbsent(docOrNurseID, date))
+            return new String[0];
+        
+        boolean[] findOut = checkDailyAvailabilityOfStaff(docOrNurseID, date);
+        boolean worksInMorning = findOut[0];
+        boolean worksInAfternoon = findOut[1];
+        
+        if (! worksInMorning && ! worksInAfternoon)
+            return new String[0];
+        
+        int durationInt = Integer.parseInt(duration.substring(0, 2));
+        
+        int startIndex, endIndex;
+        if (worksInMorning && ! worksInAfternoon) {System.out.println(worksInMorning+" "+worksInAfternoon);
+            startIndex = 0;
+            endIndex = (durationInt == 15) ? 12 : (durationInt == 30) ? 11 : (durationInt == 45) ? 10 : 9 ;
+        }
+        else if (! worksInMorning && worksInAfternoon) {
+            startIndex = 12;
+            endIndex = (durationInt == 15) ? 34 : (durationInt == 30) ? 33 : (durationInt == 45) ? 32 : 31 ;
+        }
+        else { /*worksInMorning && worksInAfternoon*/
+            startIndex = 0;
+            endIndex = (durationInt == 15) ? 34 : (durationInt == 30) ? 33 : (durationInt == 45) ? 32 : 31 ;
+        }
+        
+        String[] timeSlotsOptions = getAllTimeSlotsForDuration(duration); //print(timeSlotsOptions);
+        
         DatabaseConnection connect = DatabaseConnection.getInstance();
         
-        String[] timeSlotsOptions = getAllTimeSlotsForDuration(duration, date); print(timeSlotsOptions);
-        timeSlotsOptions = filterBasedOnGeneralDailyAvailabilityOfStaff(docOrNurseID, date, timeSlotsOptions); print(timeSlotsOptions);
-        String[] allTimesAvailableForDocOrNurse = connect.getTimesFromDoctorsandnurses(docOrNurseID, date);
-        String[] timesAvailableForDocOrNurse = {};
-        
-        if (timeSlotsOptions.length == 0) // Then staff is not available for the whole day.
-            return new String[0];
-        else if (timeSlotsOptions.length == 12) { // Then staff is ONLY avialble in the morning.
-            timesAvailableForDocOrNurse = new String[12]; System.out.println("timeSlotsOptions.length == 12");
-            System.arraycopy(allTimesAvailableForDocOrNurse, 0, timesAvailableForDocOrNurse, 0, 12);
+        //timeSlotsOptions = filterBasedOnGeneralDailyAvailabilityOfStaff(docOrNurseID, date, timeSlotsOptions); print(timeSlotsOptions);
+        String[] timesAvailableForDocOrNurse = connect.getTimesFromDoctorsandnurses(docOrNurseID, date);
+        System.out.println(timesAvailableForDocOrNurse.length);
+        if (isEmpty(timesAvailableForDocOrNurse)) { //print(timeSlotsOptions);
+            // If a row does not exist in table: 'doctorsandnurses' where staffID is staffID given and date is date given,
+            // then assume that this staff member WILL BE AVAILABLE for this whole day, therefore reutrn all timeslots.
+            String[] timeSlotsToReturn = new String[endIndex - startIndex]; //System.out.println(endIndex - startIndex);
+            for (int i=0, index=startIndex; index<endIndex; i++, index++){
+                timeSlotsToReturn[i] = timeSlotsOptions[index];System.out.println(i + " " +index);}
+            return timeSlotsToReturn;
         }
-        else if (timeSlotsOptions.length == 22) { // Then staff is ONLY avialble in the afternoon.
-            timesAvailableForDocOrNurse = new String[22]; System.out.println("timeSlotsOptions.length == 22");
-            System.arraycopy(allTimesAvailableForDocOrNurse, 12, timesAvailableForDocOrNurse, 0, 22);
-        }
-        else // Else then just keep and copy the same 34 times slots.
-            timesAvailableForDocOrNurse = allTimesAvailableForDocOrNurse;
         
         ArrayList<String> timeSlotsAvailableArrayList = new ArrayList<String>();
         String[] timeSlotsAvailableArray;
-        int durationInt = Integer.parseInt(duration.substring(0, 2));
         
         if (durationInt == 15) {
-            for (int i=0; i<timesAvailableForDocOrNurse.length; i++) {
+            for (int i=startIndex; i<endIndex; i++) {
                 // If timeslot does not have 'n' (for no - not available) then this timeslot is available so add it to  the array list.
                 if (timesAvailableForDocOrNurse[i].equalsIgnoreCase("y"))
                     timeSlotsAvailableArrayList.add(timeSlotsOptions[i]);
             }
         }
         else if (durationInt == 30) {
-            for (int i=0; i<timesAvailableForDocOrNurse.length-1; i++) {
+            for (int i=startIndex; i<endIndex-1; i++) {
                 // If timeslot does not have 'n' (for no - not available) then this timeslot is available so add it to  the array list.
                 if (timesAvailableForDocOrNurse[i].equalsIgnoreCase("y") && timesAvailableForDocOrNurse[i+1].equalsIgnoreCase("y"))
                     timeSlotsAvailableArrayList.add(timeSlotsOptions[i]);
             }
         }
         else if (durationInt == 45) {
-            for (int i=0; i<timesAvailableForDocOrNurse.length-2; i++) {
+            for (int i=startIndex; i<endIndex-2; i++) {
                 // If timeslot does not have 'n' (for no - not available) then this timeslot is available so add it to  the array list.
                 if (timesAvailableForDocOrNurse[i].equalsIgnoreCase("y") && timesAvailableForDocOrNurse[i+1].equalsIgnoreCase("y") && timesAvailableForDocOrNurse[i+2].equalsIgnoreCase("y"))
                     timeSlotsAvailableArrayList.add(timeSlotsOptions[i]);
             }
         }
         else if (durationInt == 60) {
-            for (int i=0; i<timesAvailableForDocOrNurse.length-3; i++) {
+            for (int i=startIndex; i<endIndex-3; i++) {
                 // If timeslot does not have 'n' (for no - not available) then this timeslot is available so add it to  the array list.
                 if (timesAvailableForDocOrNurse[i].equalsIgnoreCase("y") && timesAvailableForDocOrNurse[i+1].equalsIgnoreCase("y") && timesAvailableForDocOrNurse[i+2].equalsIgnoreCase("y") && timesAvailableForDocOrNurse[i+3].equalsIgnoreCase("y"))
                     timeSlotsAvailableArrayList.add(timeSlotsOptions[i]);
@@ -1265,6 +1293,13 @@ public class Main {
         
         if (array.length == 0)
             return true;
+        boolean allNull = true;
+        for (int i=0; i<array.length; i++) {
+            if (array[i] != null)
+                allNull = false;
+        }
+        if (allNull)
+            return true;
         return false;
     }
     
@@ -1276,6 +1311,15 @@ public class Main {
             if (array[0].length == 0)
                 return true;
         }
+        boolean allNull = true;
+        for (int i=0; i<array.length; i++) {
+            for (int j=0; j<array[i].length; j++) {
+                if (array[i][j] != null)
+                    allNull = false;
+            }
+        }
+        if (allNull)
+            return true;
         return false;
     }
     
