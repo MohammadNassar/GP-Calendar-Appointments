@@ -27,6 +27,7 @@ public class GUI extends JFrame {
 	private JTextField userText;
 	private JPasswordField passText;
 	private JButton enter, reset, cancel;
+        private boolean userIsDoctor, userIsNurse, userIsReceptionist, userIsOfficeManager;
 	
 	// appFrame items
         private JFrame appFrame;
