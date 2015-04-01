@@ -5,7 +5,7 @@ import javax.swing.*;
 
 public class DaysOffTableModel extends AbstractTableModel {
     
-    private String[] columnNames = {"Dates of Days Off"};
+    private String[] columnNames = {"Days Off Dates", "Type", "Description"};
     private String[] filter = {""};
     private Object[][] tableData;
     

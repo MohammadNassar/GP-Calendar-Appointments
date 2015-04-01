@@ -65,7 +65,11 @@ public class Main {
         //System.out.println(isOnHoliday("1","2014-04-20"));
         //System.out.println(isAbsent("1","2014-04-20"));
         //print(getAllTimeSlotsForDuration("60"));
-        print(getTimeSlotsAvailable("1", "2014-05-02", "60"));
+        //print(getTimeSlotsAvailable("1", "2014-05-02", "60"));
+        //System.out.println(isAbsentOrOnHoliday("2","2014-04-10"));
+        //System.out.println(hasAccessRight("1", "1234"));
+        //boolean[] privileges = getAccessPrivileges("1"); for (boolean val : privileges) System.out.print(val + "\t");
+        print(getDaysOff(new String[0]));
     }
     
     public static void execute (String instruction) { // This method can be used for SQL queries that do not return a value, e.g. INSERT, UPDATE and REMOVE.
@@ -73,6 +77,39 @@ public class Main {
         DatabaseConnection connect = DatabaseConnection.getInstance();
         System.out.println(instruction);
         connect.execute(instruction);
+    }
+    
+    public static boolean[] getAccessPrivileges(String staffID) {
+        
+        boolean[] privilegesOfEach = {false, false, false, false};
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        String tableName = "StaffRole";
+        String[] columnNames = {"RoleID"};
+        String extraQuery = "WHERE StaffID ='" + staffID + "' ;";
+        String[] result = connect.getOneRowFromTable(tableName, columnNames, extraQuery);
+        for (int i=0; i<result.length; i++) {
+            if (result[i].equals("1"))
+                privilegesOfEach[0] = true;
+            else if (result[i].equals("2"))
+                privilegesOfEach[1] = true;
+            else if (result[i].equals("3"))
+                privilegesOfEach[2] = true;
+            else
+                privilegesOfEach[3] = true;
+        }
+        return privilegesOfEach;
+    }
+    
+    public static boolean hasAccessRight(String staffID, String password) {
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        String tableName = "LoginDetails";
+        String[] columnNames = {"StaffID", "StaffPassword"};
+        String extraQuery = "WHERE StaffID = '"+ staffID +"' AND StaffPassword = '"+ password +"' ;";
+        String[] result = connect.getOneRowFromTable(tableName, columnNames, extraQuery);
+        if (result.length == 0)
+            return false;
+        return true;
     }
     
     public static String[][] getAppointments(String[] line) {
@@ -167,6 +204,20 @@ public class Main {
             return new boolean[]{table[0][1].equals(Integer.toString(morning)), table[0][1].equals(Integer.toString(afternoon))};
     }
     
+    public static boolean isAbsentOrOnHoliday(String staffID, String date) {
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        
+        String tableName = "StaffDaysOff";
+        String[] columnNames = {"StaffID", "Date"};
+        String extraQuery = "WHERE StaffID = '"+ staffID +"' AND Date = '"+ date +"' ;";
+        
+        String[] array = connect.getOneRowFromTable(tableName, columnNames, extraQuery);
+        if (array.length == 0)
+            return false;
+        return true;
+    }
+    
     public static boolean isOnHoliday(String staffID, String date) {
         
         DatabaseConnection connect = DatabaseConnection.getInstance();
@@ -213,7 +264,7 @@ public class Main {
             
             ArrayList<String> allConditions = new ArrayList<String>();
             
-            String[] columnNames = {"day "};
+            String[] columnNames = {"date ", "type ", "description "};
             for (int i=0; i<line.length; i++) {
                 if ( ! line[i].equals("") )
                     allConditions.add(columnNames[i] + "LIKE '" + line[i] + "' ");
@@ -230,7 +281,7 @@ public class Main {
             
         }
         
-        query += "ORDER BY day ";
+        query += "ORDER BY date ";
         query += ";";
         System.out.println(query);
         String[][] table = connect.getDaysOff(query);
@@ -687,10 +738,13 @@ public class Main {
     public static String[] getTimeSlotsAvailable(String docOrNurseID, String date, String duration) {
         
         // This method is called from the GUI class ONLY IF a record exists in the table 'doctorsandnurses' where staffID = staffID given and date = date given.
-        if (isOnHoliday(docOrNurseID, date))
+        /*if (isOnHoliday(docOrNurseID, date))
             return new String[0];
         
         if (isAbsent(docOrNurseID, date))
+            return new String[0];*/
+        
+        if (isAbsentOrOnHoliday(docOrNurseID, date))
             return new String[0];
         
         boolean[] findOut = checkDailyAvailabilityOfStaff(docOrNurseID, date);

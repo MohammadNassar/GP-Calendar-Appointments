@@ -115,9 +115,13 @@ public class DatabaseConnection {
                 
                 list.add(new ArrayList<String>());
                 // Concatenate results retrieved from table and print them.
-                String day = result.getString("day");
+                String date = result.getString("date");
+                String type = result.getString("type");
+                String description = result.getString("description");
                 
-                list.get(index).add(day);
+                list.get(index).add(date);
+                list.get(index).add(type);
+                list.get(index).add(description);
                 
                 index++;
             }
@@ -598,7 +602,7 @@ public class DatabaseConnection {
         try {
             
             connect.close();
-            System.out.println("Closed");
+            System.out.println("Connection Closed !!");
         } catch (SQLException s) {
             System.out.println("Unable to get connection or create statement. ==> ("+s+")");
         }

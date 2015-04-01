@@ -21,6 +21,7 @@ public class GUI extends JFrame {
     
 	// setResizable(false);
 	// loginFrame items
+        private JFrame loginFrame;
 	private JLabel logoHolder, userLabel, passLabel;
 	private ImageIcon logo;
 	private JPanel loginItemsHolder1, loginItemsHolder2, loginItemsHolder3;
@@ -33,7 +34,7 @@ public class GUI extends JFrame {
         private JFrame appFrame;
 	private JLabel item1, idLabel, typeLabel, patientLabel, staffLabel, dateLabel, yearLabel, monthLabel, dayLabel, hourLabel, startTimeLabel, finishTimeLabel;
 	private JTextField idTextField, typeTextField, patientTextField, staffTextField, dateTextField, startTimeTextField, finishTimeTextField;
-	private JButton button1, searchButton, resetButton, addButton, updateButton, setHolidaysButton;
+	private JButton button1, searchButton, resetButton, addButton, updateButton, setHolidaysButton, logoutButton;
         private JComboBox typesList, timeSlotsList, yearsList, monthsList, daysList, hoursList;
         private JRadioButton routineType, careManagementType, allTypes;
         private ButtonGroup radioGroupTypes;
@@ -61,7 +62,7 @@ public class GUI extends JFrame {
         private JLabel idEditLabel, appInfoLabel;
         private JTextField idEditText;
         private JTextArea appInfoArea;
-        private JButton editEditButton, removeEditButton, cancelEditButton;
+        private JButton addSummaryButton, editEditButton, removeEditButton, cancelEditButton;
         
         // General
         private boolean inEditingMode;
@@ -75,18 +76,23 @@ public class GUI extends JFrame {
         
 	public GUI() {
 		
-		super("Surgery's 'Calnedar Appointments' System");
+		//super("Surgery's 'Calnedar Appointments' System");
 		loginFrame();
 	}
 	
 	private void loginFrame() {
 		
 		//super("Surgery's 'Calnedar Appointments' System");
-		setLayout(new FlowLayout());
+                loginFrame = new JFrame("Surgery's 'Calnedar Appointments' System");
+		//loginFrame.pack();
+		loginFrame.setSize(500, 500);
+		loginFrame.setLocation(400, 100);
+		loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		loginFrame.setLayout(new FlowLayout());
 		
 		logo = new ImageIcon(getClass().getResource("logo.png"));
 		logoHolder = new JLabel(logo);
-		add(logoHolder);
+		loginFrame.add(logoHolder);
 		
 		userLabel = new JLabel("Please enter your Username:");
 		userText = new JTextField(15);
@@ -95,7 +101,7 @@ public class GUI extends JFrame {
 		
 		enter = new JButton("Enter");
 		reset = new JButton("Reset");
-		cancel = new JButton("Cancel");
+		cancel = new JButton("Exit");
 		
 		loginItemsHolder1 = new JPanel();
 		loginItemsHolder2 = new JPanel();
@@ -111,9 +117,9 @@ public class GUI extends JFrame {
 		loginItemsHolder3.add(reset);
 		loginItemsHolder3.add(cancel);
 		
-		add(loginItemsHolder1);
-		add(loginItemsHolder2);
-		add(loginItemsHolder3);
+		loginFrame.add(loginItemsHolder1);
+		loginFrame.add(loginItemsHolder2);
+		loginFrame.add(loginItemsHolder3);
 		
 		/*add(userLabel);
 		add(userText);
@@ -128,16 +134,24 @@ public class GUI extends JFrame {
 		enter.addActionListener(listen);
 		reset.addActionListener(listen);
 		cancel.addActionListener(listen);
+                
+                loginFrame.setVisible(true);
+                
+                loginFrame.addWindowListener( new WindowAdapter() {
+                    public void windowClosing(WindowEvent e) {
+                        Main.close();
+                    }
+                });
 	}
 	
 	private void appFrame() {
 		
-		setVisible(false);
+		loginFrame.setVisible(false);
 		appFrame = new JFrame("Appointments System");
 		appFrame.setVisible(true);
 		appFrame.setSize(900, 600);
 		appFrame.setLocation(300, 100);
-		appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		//appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		GridBagConstraints c = new GridBagConstraints();
 		
 		mainPanel = new JPanel(new GridBagLayout());
@@ -221,6 +235,7 @@ public class GUI extends JFrame {
 		addButton = new JButton("Add");
 		updateButton = new JButton("Edit / Remove");
 		setHolidaysButton = new JButton("Holidays & Days Off");
+                logoutButton = new JButton("Log Out");
 		
 		c.gridx = 0;
 		c.gridy = 2;
@@ -280,6 +295,8 @@ public class GUI extends JFrame {
 		optionsPanel.add(updateButton, c);
 		c.gridy = 19; c.gridx = -1;
 		optionsPanel.add(setHolidaysButton, c);
+                c.gridy = 19; c.gridx = 1;
+		optionsPanel.add(logoutButton, c);
                 
                 //textArea1 = new JTextArea(80, 40);
                 //mainPanel.add(textArea1);
@@ -302,12 +319,13 @@ public class GUI extends JFrame {
                 addButton.addActionListener(listen);
                 updateButton.addActionListener(listen);
                 setHolidaysButton.addActionListener(listen);
+                logoutButton.addActionListener(listen);
                 
                 appFrame.addWindowListener( new WindowAdapter() {
-                public void windowClosing(WindowEvent e) {
-                    Main.close();
-                }
-            });
+                    public void windowClosing(WindowEvent e) {
+                        loginFrame();
+                    }
+                });
 	}
         
         public void addAppFrame() {
@@ -512,6 +530,7 @@ public class GUI extends JFrame {
             appInfoArea = new JTextArea(rowInfo);
             appInfoArea.setEditable(false);
             
+            addSummaryButton = new JButton("Add Summary");
             editEditButton = new JButton("Edit");
             removeEditButton = new JButton("Remove");
             cancelEditButton = new JButton("Cancel");
@@ -526,10 +545,12 @@ public class GUI extends JFrame {
             c.gridy = 4;
             editAppPanel.add(appInfoArea, c);
             c.gridy = 5;
-            editAppPanel.add(editEditButton, c);
+            editAppPanel.add(addSummaryButton, c);
             c.gridy = 6;
+            editAppPanel.add(editEditButton, c);
+            c.gridy = 7;
             editAppPanel.add(removeEditButton, c);
-            //c.gridy = 7;
+            //c.gridy = 8;
             //editAppPanel.add(cancelEditButton, c);
             
             JScrollPane editAppScroll = new JScrollPane(editAppPanel);
@@ -537,6 +558,7 @@ public class GUI extends JFrame {
             
             Listener listen = new Listener();
             
+            addSummaryButton.addActionListener(listen);
             editEditButton.addActionListener(listen);
             removeEditButton.addActionListener(listen);
             /*cancelEditButton.addActionListener(new ActionListener() {
@@ -561,7 +583,7 @@ public class GUI extends JFrame {
             
             daysOffFrame = new JFrame("Days Off and Holidays");
             daysOffFrame.setVisible(true);
-            daysOffFrame.setBounds(400, 200, 450, 400);
+            daysOffFrame.setBounds(400, 200, 660, 400);
             JPanel daysOffOptionsPanel = new JPanel();
             JPanel daysOffMainPanel = new JPanel();
             daysOffOptionsPanel.setLayout(new GridBagLayout());
@@ -576,7 +598,10 @@ public class GUI extends JFrame {
             daysOffTableModel = new DaysOffTableModel();
             daysOffTable = new JTable(daysOffTableModel);
             daysOffTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            daysOffTable.setPreferredScrollableViewportSize(new Dimension(80, 200));
+            daysOffTable.setPreferredScrollableViewportSize(new Dimension(300, 200));
+            daysOffTable.getColumnModel().getColumn(0).setPreferredWidth(90);
+            daysOffTable.getColumnModel().getColumn(1).setPreferredWidth(50);
+            daysOffTable.getColumnModel().getColumn(2).setPreferredWidth(160);
             
             c.gridy = 1; c.gridx = 1;
             daysOffOptionsPanel.add(searchDaysOffText, c);
@@ -804,23 +829,19 @@ public class GUI extends JFrame {
 				
 				if (! user.equals("") && ! pass.equals("")) {
 					
-					String[] dbUser = {"mohammad", "groupa"};
-					String[] dbPass = {"1000", "aBcD"};
-					boolean access= false;
-					
-					for (int i=0; i<dbUser.length; i++) {
-						if (dbUser[i].equals(user) && dbPass[i].equals(pass)) {
-							access = true;
-							break;
-						}
-					}
+					boolean access= Main.hasAccessRight(user, pass);
 					
 					if (access) {
-						JOptionPane.showMessageDialog(null, "You have successfully accessed the program.", "Access Guaranteed", JOptionPane.WARNING_MESSAGE);
-						appFrame();
+                                            boolean[] privileges = Main.getAccessPrivileges(user);
+                                            userIsDoctor = privileges[0];
+                                            userIsNurse = privileges[1];
+                                            userIsReceptionist = privileges[2];
+                                            userIsOfficeManager = privileges[3];
+                                            JOptionPane.showMessageDialog(null, "You have successfully accessed the program.", "Access Guaranteed", JOptionPane.WARNING_MESSAGE);
+                                            appFrame();
 					}
 					else {
-						JOptionPane.showMessageDialog(null, "You have entered an incorrect username and/or password!!\nPlease try again.", "Incorrect Input !!", JOptionPane.ERROR_MESSAGE);
+                                            JOptionPane.showMessageDialog(null, "You have entered an incorrect username and/or password!!\nPlease try again.", "Incorrect Input !!", JOptionPane.ERROR_MESSAGE);
 					}
 				}
 				else {
@@ -839,6 +860,7 @@ public class GUI extends JFrame {
 			}
 			else if(e.getSource() == cancel) {
 				
+                                Main.close();
 				System.exit(0);
 			}
 			
@@ -918,8 +940,14 @@ public class GUI extends JFrame {
                                 JOptionPane.showMessageDialog(null, "Please select an appointment from the table first !!");
                         }
                         else if (e.getSource() == setHolidaysButton) {
-                            
-                            daysOffFrame();
+                            if (userIsOfficeManager)
+                                daysOffFrame();
+                            else
+                                JOptionPane.showMessageDialog(null, "Sorry you do not have access rights to use this functionality !!", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                        else if (e.getSource() == logoutButton) {
+                            appFrame.setVisible(false);
+                            loginFrame();
                         }
                         
                         // addAppFrame actions listener
@@ -1056,7 +1084,14 @@ public class GUI extends JFrame {
                         }
                         
                         // updateAppFrame actions listener
-                        if (e.getSource() == editEditButton) {
+                        if (e.getSource() == addSummaryButton) {
+                            
+                            if (userIsDoctor)
+                                JOptionPane.showMessageDialog(null, "You are a Doctor");
+                            else
+                                JOptionPane.showMessageDialog(null, "Sorry you do not have permission to add a summary to an appointment !!", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                        else if (e.getSource() == editEditButton) {
                             
                             inEditingMode = true;
                             addAppFrame();
@@ -1121,15 +1156,20 @@ public class GUI extends JFrame {
                             if(daysOffTable.getSelectedRow() < 0)
                                 JOptionPane.showMessageDialog(null, "Please select a day from the table first !!");
                             else {
-                                int ans = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this appointment?", "Title", JOptionPane.YES_NO_OPTION);
-                                if (ans == JOptionPane.YES_OPTION) {
-                                    int row = daysOffTable.getSelectedRow();
-                                    String day = (String) daysOffTable.getModel().getValueAt(row, 0);
-                                    // Delete appointment from table appointments.
-                                    Main.execute("DELETE FROM gpdaysoff WHERE day = '" + day + "' ;");
-                                    JOptionPane.showMessageDialog(null, "Appointment has been deleted successfully.");
-                                    daysOffTableModel.setFilter(new String[]{});
-                                    daysOffTableModel.fireTableDataChanged();
+                                String type = daysOffTable.getValueAt(daysOffTable.getSelectedRow(), 1).toString();
+                                if (type.equalsIgnoreCase("Public"))
+                                    JOptionPane.showMessageDialog(null, "This is a public holiday and cannot be deleted !!", "Error", JOptionPane.ERROR_MESSAGE);
+                                else {
+                                    int ans = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this appointment?", "Title", JOptionPane.YES_NO_OPTION);
+                                    if (ans == JOptionPane.YES_OPTION) {
+                                        int row = daysOffTable.getSelectedRow();
+                                        String day = (String) daysOffTable.getModel().getValueAt(row, 0);
+                                        // Delete appointment from table appointments.
+                                        Main.execute("DELETE FROM gpdaysoff WHERE day = '" + day + "' ;");
+                                        JOptionPane.showMessageDialog(null, "Appointment has been deleted successfully.");
+                                        daysOffTableModel.setFilter(new String[]{});
+                                        daysOffTableModel.fireTableDataChanged();
+                                    }
                                 }
                             }
                         }
@@ -1188,11 +1228,11 @@ public class GUI extends JFrame {
 		
 		GUI gui = new GUI();
 		
-		gui.setVisible(true);
+		/*gui.setVisible(true);
 		//gui.pack();
 		gui.setSize(500, 500);
 		gui.setLocation(400, 100);
-		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
 	}
 	
 }
