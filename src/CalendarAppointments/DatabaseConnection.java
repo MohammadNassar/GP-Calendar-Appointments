@@ -179,7 +179,52 @@ public class DatabaseConnection {
         return array;
     }
     
+    public String[][] getKeyAndValOfTempPatients() {
+        
+        String query = "SELECT * FROM TempPatient ;";
+        System.out.println(query);
+        String[][] array = {{}};
+        try {
+            result = statement.executeQuery(query);
+            ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
+            int index = 0;
+            while (result.next()) {
+
+                list.add(new ArrayList<String>());
+                boolean addMName;
+                // Concatenate results retrieved from table and print them.
+                String key = result.getString("PatientNumber");
+                String fname = result.getString("FirstName");
+                String mname = result.getString("MiddleName");
+                addMName = (result.wasNull()) ? false : true;
+                String lname = result.getString("LastName");
+                String val = "";
+                if (addMName)
+                    val = fname + " " + mname + " " + lname;
+                else
+                    val = fname + " " + lname;
+
+                list.get(index).add(key);
+                list.get(index).add(val);
+                index++;
+            }
+            array = convert2DArrayListTo2DArray(list);
+        }
+        catch (SQLException s) {
+        System.out.println("Unable to execute query. ==> ("+s+")");
+        }
+        return array;
+    }
+    
     public Object[][] exchangePatientIDsWithPatientNames(Object[][] array) {
+        
+        Object[][] permanentPatientsNames = exchangePermanentPatientIDsWithPatientNames(array);
+        Object[][] tempPatientsNames = exchangeTempPatientIDsWithPatientNames(array);
+        Object[][] allPatientsNames = concat2DArrays(permanentPatientsNames, tempPatientsNames);
+        return allPatientsNames;
+    }
+    
+    public Object[][] exchangePermanentPatientIDsWithPatientNames(Object[][] array) {
         
         if (isEmpty(array))
             return array; // As it without processing
@@ -188,6 +233,40 @@ public class DatabaseConnection {
         for (int i=0; i<array.length; i++) {
             String id = array[i][col].toString();
             String query = "SELECT * FROM Patient WHERE NhsNumber = '" + id + "' ;";
+            //System.out.println(query);
+            String name = id; // Initially name is set to id (the original value), just in case if any problem occurs, then the id number would stay there in the table.
+            try {
+                result = statement.executeQuery(query);
+                if (result.next()) {
+                    boolean addMName;
+                    // Concatenate results retrieved from table and eventually add them where the id used to be.
+                    String fname = result.getString("FirstName");
+                    String mname = result.getString("MiddleName");
+                    addMName = (result.wasNull()) ? false : true;
+                    String lname = result.getString("LastName");
+                    if (addMName)
+                        name = fname + " " + mname + " " + lname;
+                    else
+                        name = fname + " " + lname;
+                }
+                array[i][2] = name;
+            }
+            catch (SQLException s) {
+                System.out.println("Unable to execute query. ==> ("+s+")");
+            }
+        }
+        return array;
+    }
+    
+    public Object[][] exchangeTempPatientIDsWithPatientNames(Object[][] array) {
+        
+        if (isEmpty(array))
+            return array; // As it without processing
+        
+        int col = 2;
+        for (int i=0; i<array.length; i++) {
+            String id = array[i][col].toString();
+            String query = "SELECT * FROM TempPatient WHERE PatientNumber = '" + id + "' ;";
             //System.out.println(query);
             String name = id; // Initially name is set to id (the original value), just in case if any problem occurs, then the id number would stay there in the table.
             try {
@@ -630,5 +709,13 @@ public class DatabaseConnection {
             }
         }
         return array;
+    }
+    
+    public static Object[][] concat2DArrays(Object[][] array1, Object[][] array2) {
+        
+        Object[][] concatArray = new Object[array1.length+array2.length][];
+        System.arraycopy(array1, 0, concatArray, 0, array1.length);
+        System.arraycopy(array2, 0, concatArray, array1.length, array2.length);
+        return concatArray;
     }
 }

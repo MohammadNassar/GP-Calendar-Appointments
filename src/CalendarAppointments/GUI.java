@@ -52,9 +52,9 @@ public class GUI extends JFrame {
         private JRadioButton routineTypeAdd, careManagementTypeAdd;
         private ButtonGroup radioGroupAdd;
         private JTextField idAddText, typeAddText, patientAddText, staffAddText, dateAddText, startTimeAddText, finishTimeAddText;
-        private JComboBox patientsListAdd, staffListAdd, durationsListAdd, timesListAdd, roomsListAdd;
+        private JComboBox patientsListAdd, staffListAdd, durationsListAdd, timesListAdd, roomsListAdd, yearsListAdd, monthsListAdd, daysListAdd;
         private JButton checkDateButton, submitAdd, resetAdd, cancelAdd;
-        private String timeSelectedAdd, dateLookedAt, typeChosenAdd = "", oldTimeSlot, oldStaff, oldDate, oldRoom, id, oldPatient;
+        private String timeSelectedAdd, dateLookedAt, typeChosenAdd = "", oldTimeSlot, oldStaff, oldDate, oldRoom, id, oldPatient, oldType;
         private String[][] patientsKeyAndVal, docsAndNursesKeyAndVal;
         
         // editAppFrame items
@@ -65,7 +65,7 @@ public class GUI extends JFrame {
         private JButton addSummaryButton, editEditButton, removeEditButton, cancelEditButton;
         
         // General
-        private boolean inEditingMode;
+        private boolean inEditingMode, noEditingMadeYet;
         
         // Days Off and Holidays Frame
         private JFrame daysOffFrame;
@@ -99,7 +99,7 @@ public class GUI extends JFrame {
 		passLabel = new JLabel("Please enter your Password:");
 		passText = new JPasswordField(15);
 		
-		enter = new JButton("Enter");
+		enter = new JButton("Login");
 		reset = new JButton("Reset");
 		cancel = new JButton("Exit");
 		
@@ -365,7 +365,15 @@ public class GUI extends JFrame {
             patientsKeyAndVal = Main.getKeyAndValOfPatients();
             patientsListAdd = new JComboBox(Main.getAllValuesOnly(patientsKeyAndVal));
             //staffAddText = new JTextField(15);
+            
+            String[] years = Main.getAllYears(), months = Main.getAllMonths(), days = Main.getAllDays();
+            years[0] = "Year"; months[0] = "Month"; days[0] = "Day";
+            yearsListAdd = new JComboBox(years);
+            monthsListAdd = new JComboBox(months);
+            daysListAdd = new JComboBox(days);
+            
             dateAddText = new JTextField(15);
+            dateAddText.setEditable(false);
             //startTimeAddText = new JTextField(15);
             //finishTimeAddText = new JTextField(15);
             
@@ -381,8 +389,39 @@ public class GUI extends JFrame {
             roomsListAdd = new JComboBox(arr/*Main.getAllRooms()*/);
             roomsListAdd.setEnabled(false);
             
-            dateLookedAt = "";
+            //dateLookedAt = "";
             typeChosenAdd = "";
+            
+            if (inEditingMode) {
+                /* Cancel old reservations, retrieve old details and set these details to be selected by default.
+                *  Hence whenever I use information like staff and patient I actually get the primary key 
+                *  of that staff/patient and use it to get name from list using other helper methods in class 'Main'. */
+                Main.setAvailability(true, oldTimeSlot, oldStaff, oldDate);
+                Main.setRoomsAvailability(true, oldRoom, oldDate, oldTimeSlot);
+                
+                int row = appTable.getSelectedRow();
+                
+                if (oldType.equalsIgnoreCase("Routine")) {
+                    routineTypeAdd.setSelected(true);
+                    typeChosenAdd = "Routine";
+                }
+                else {
+                    careManagementTypeAdd.setSelected(true);
+                    typeChosenAdd = "Care Management";
+                }
+                String patientAndStaff[] = Main.getPatientAndStaffWithThisAppID(id);
+                oldPatient = patientAndStaff[0];
+                // Staff list select is done in method: 'updateListOfStaff'.
+                //oldStaff = patientAndStaff[1]; //System.out.println(oldPatient + " " + oldStaff);
+                int patientIndex = Main.getRowIndexWhereKeyIs(patientsKeyAndVal, oldPatient);
+                patientsListAdd.setSelectedIndex(patientIndex);
+                
+                dateAddText.setText(oldDate);
+                updateListOfStaff();
+                updateListOfTimes();
+                
+                noEditingMadeYet = false;
+            }
             
             // By adding this button (which does not really have an action) I invoke the user to make the focus lost from the date text field.
             checkDateButton = new JButton("Check Date");
@@ -411,37 +450,43 @@ public class GUI extends JFrame {
             //addAppPanel.add(staffAddText, c);
             c.gridy = 9;
             addAppPanel.add(dateAddLabel, c);
-            c.gridy = 10;
+            c.gridy = 10; c.anchor = GridBagConstraints.LINE_START;
+            addAppPanel.add(yearsListAdd, c);
+            c.gridy = 10; c.anchor = GridBagConstraints.CENTER;
+            addAppPanel.add(monthsListAdd, c);
+            c.gridy = 10; c.anchor = GridBagConstraints.LINE_END;
+            addAppPanel.add(daysListAdd, c);
+            c.gridy = 11; c.anchor = GridBagConstraints.CENTER;
             addAppPanel.add(dateAddText, c);
-            c.gridy = 11;
-            //addAppPanel.add(startTimeAddLabel, c);
             c.gridy = 12;
-            //addAppPanel.add(startTimeAddText, c);
+            //addAppPanel.add(startTimeAddLabel, c);
             c.gridy = 13;
-            //addAppPanel.add(finishTimeAddLabel, c);
+            //addAppPanel.add(startTimeAddText, c);
             c.gridy = 14;
-            //addAppPanel.add(finishTimeAddText, c);
+            //addAppPanel.add(finishTimeAddLabel, c);
             c.gridy = 15;
-            addAppPanel.add(checkDateButton, c);
+            //addAppPanel.add(finishTimeAddText, c);
             c.gridy = 16;
-            addAppPanel.add(staffAddLabel, c);
+            addAppPanel.add(checkDateButton, c);
             c.gridy = 17;
-            addAppPanel.add(staffListAdd, c);
+            addAppPanel.add(staffAddLabel, c);
             c.gridy = 18;
-            addAppPanel.add(durationAddLabel, c);
+            addAppPanel.add(staffListAdd, c);
             c.gridy = 19;
-            addAppPanel.add(durationsListAdd, c);
+            addAppPanel.add(durationAddLabel, c);
             c.gridy = 20;
-            addAppPanel.add(appTimeAddLabel, c);
+            addAppPanel.add(durationsListAdd, c);
             c.gridy = 21;
-            addAppPanel.add(timesListAdd, c);
+            addAppPanel.add(appTimeAddLabel, c);
             c.gridy = 22;
-            addAppPanel.add(roomAddLabel, c);
+            addAppPanel.add(timesListAdd, c);
             c.gridy = 23;
-            addAppPanel.add(roomsListAdd, c);
+            addAppPanel.add(roomAddLabel, c);
             c.gridy = 24;
-            addAppPanel.add(submitAdd, c);
+            addAppPanel.add(roomsListAdd, c);
             c.gridy = 25;
+            addAppPanel.add(submitAdd, c);
+            c.gridy = 26;
             addAppPanel.add(resetAdd, c);
             //c.gridy = 22;
             //addAppPanel.add(cancelAdd, c);
@@ -486,7 +531,10 @@ public class GUI extends JFrame {
             addAppFrame.addWindowListener( new WindowAdapter() {
                 public void windowClosing(WindowEvent e) {
                     if (inEditingMode) {
-                        editAppFrame.setEnabled(true);;
+                        // Re-add the old reservations, because user cancelled the editing by pressing the exit icon.
+                        Main.setAvailability(false, oldTimeSlot, oldStaff, oldDate);
+                        Main.setRoomsAvailability(false, oldRoom, oldDate, oldTimeSlot);
+                        editAppFrame.setEnabled(true);
                         inEditingMode = false;
                     }
                     else {
@@ -506,6 +554,7 @@ public class GUI extends JFrame {
             id = rowDetails[0];
             String rowInfo = rowDetails[rowDetails.length-1];
             
+            oldType = rowDetails[1];
             oldTimeSlot = rowDetails[5];
             String patientAndStaff[] = Main.getPatientAndStaffWithThisAppID(id);
             oldPatient = patientAndStaff[0];
@@ -639,9 +688,9 @@ public class GUI extends JFrame {
             //System.out.println("focusLost");
             staffListAdd.removeAllItems();
             String[] staffOptions = new String[0];
-
+            
             if (! dateAddText.getText().equals("")) {
-                //staffOptions = Main.getOneColumnFromTable("SELECT name FROM doctorsandnurses WHERE date LIKE '" + dateLookedAt + "' ;");
+                //staffOptions = Main.getOneColumnFromTable("SELECT name FROM doctorsandnurses WHERE date LIKE '" + dateAddText.getText()/*dateLookedAt*/ + "' ;");
                 /*staffOptions = Main.getOneColumnFromTable("SELECT name FROM doctorsandnurses ;"); staffOptions = Main.removeRepeated(staffOptions);*/
                 docsAndNursesKeyAndVal = Main.getKeyAndValOfDocsAndNurses();
                 staffOptions = Main.getAllValuesOnly(docsAndNursesKeyAndVal);
@@ -649,6 +698,10 @@ public class GUI extends JFrame {
                 
                 for (String val : staffOptions)
                     staffListAdd.addItem(val);
+                if (inEditingMode && noEditingMadeYet) {
+                    int staffIndex = Main.getRowIndexWhereKeyIs(docsAndNursesKeyAndVal, oldStaff);
+                    staffListAdd.setSelectedIndex(staffIndex);
+                }
             }
             else {
                 String[] options = {"Add & Check Date First"};
@@ -666,13 +719,23 @@ public class GUI extends JFrame {
              // If date is not empty AND list of staff is not empty.
             if (! dateAddText.getText().equals("") && staffListAdd.getItemCount() != 0 && ! staffListAdd.getSelectedItem().equals("Add & Check Date First")) {
                 //if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name = '"+Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex())+"' ;"))
-                timesOptions = Main.getTimeSlotsAvailable(Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateLookedAt, durationsListAdd.getSelectedItem().toString());
+                timesOptions = Main.getTimeSlotsAvailable(Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateAddText.getText()/*dateLookedAt*/, durationsListAdd.getSelectedItem().toString());
                 //else timesOptions = Main.getAllTimeSlotsForDuration(durationsListAdd.getSelectedItem().toString());
                 timesListAdd.setEnabled(true);
                 
                 if (timesOptions.length > 0) {
                     for (String val : timesOptions)
                         timesListAdd.addItem(val);
+                    if (inEditingMode && noEditingMadeYet) {
+                        // Update selection of duration according to old one.
+                        int duration = Main.getDuration(oldTimeSlot);
+                        int index = (duration == 15) ? 0 : (duration == 30) ? 1 : (duration == 45) ? 2 : 3;
+                        durationsListAdd.setSelectedIndex(index);
+                        // Update selection of timeslot according to old one.
+                        int timeSlotIndex = Main.getRowIndex(timesOptions, oldTimeSlot);
+                        timesListAdd.setSelectedIndex(timeSlotIndex);
+                        updateListOfRooms();
+                    }
                 }
                 else{
                     timesListAdd.addItem("No Available Time Slots");
@@ -709,6 +772,10 @@ public class GUI extends JFrame {
                 //String[] allRooms = Main.getAllRooms();
                 for (String room : allRooms)
                     roomsListAdd.addItem(room);
+                if (inEditingMode && noEditingMadeYet) {
+                    int index = Main.getRowIndex(allRooms, oldRoom);
+                    roomsListAdd.setSelectedIndex(index);
+                }
             }
             else {
                 String[] options = {"Add & Check Date First"};
@@ -748,7 +815,7 @@ public class GUI extends JFrame {
             
             if (! dateEditText.getText().equals("")) {
                 if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateEditText.getText()+"' AND  name LIKE '"+staffListEdit.getSelectedItem()+"' ;"))
-                    timesOptions = Main.getTimeSlotsAvailable(Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateLookedAt, durationsListAdd.getSelectedItem().toString());
+                    timesOptions = Main.getTimeSlotsAvailable(Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateAddText.getText() /*dateLookedAt, durationsListAdd.getSelectedItem().toString());
                 else
                     timesOptions = Main.getAllTimeSlotsForDuration(durationsListAdd.getSelectedItem().toString());
                 list.setEnabled(true);
@@ -952,25 +1019,37 @@ public class GUI extends JFrame {
                         
                         // addAppFrame actions listener
                         if (e.getSource() == checkDateButton) {
-                            if (! dateAddText.getText().equals("")) {
-                                if (Main.dateIsInCorrectFormat(dateAddText.getText())) {
-                                    if (Main.gpIsOpenOn(dateAddText.getText())) {
-                                        dateLookedAt = dateAddText.getText();
+                            String dateSelected = yearsListAdd.getSelectedItem().toString() + "-" + monthsListAdd.getSelectedItem().toString() + "-" + daysListAdd.getSelectedItem().toString();
+                            if (! dateSelected.equalsIgnoreCase("Year-Month-Day")/*! dateAddText.getText().equals("")*/) {
+                                if (Main.dateIsInCorrectFormat(dateSelected)) {
+                                    if (Main.gpIsOpenOn(dateSelected)) {
+                                        //dateLookedAt = dateAddText.getText();
+                                        dateAddText.setText(dateSelected);
                                         updateListOfStaff();
                                         updateListOfTimes();
                                     }
                                     else {
                                         resetAddApp();
-                                        JOptionPane.showMessageDialog(null, "Sorry the GP is not open on this day !!");
+                                        String moreInfo = "";
+                                        if (Main.getDayOfWeek(dateSelected) == 1)
+                                            moreInfo += "We are closed on Sundays !!";
+                                        else if (Main.dateIsInThePast(dateSelected))
+                                            moreInfo += "Appointments can only be made in the future !!";
+                                        else if (! Main.isValidDateInCommonYear(dateSelected))
+                                            moreInfo += "This date is invalid !!";
+                                        else
+                                            moreInfo += "We are closed on this day due to 'Training' or 'Public Holiday' !!";
+                                        JOptionPane.showMessageDialog(null, "Sorry the GP is not open on this day !!\n"+moreInfo, "Incorrect Action !!", JOptionPane.ERROR_MESSAGE);
                                     }
                                 }
                                 else {
                                     resetAddApp();
-                                    JOptionPane.showMessageDialog(null, "Please enter date in this format:\nyyyy-mm-dd");
+                                    JOptionPane.showMessageDialog(null, "Please enter date in this format:\nyyyy-mm-dd", "Incorrect Action !!", JOptionPane.ERROR_MESSAGE);
                                 }
                             }
                             else {
-                                JOptionPane.showMessageDialog(null, "Please enter a date !!");
+                                resetAddApp();
+                                JOptionPane.showMessageDialog(null, "Please enter a date and press the 'Check Date' button !!", "Incorrect Action !!", JOptionPane.ERROR_MESSAGE);
                             }
                         }
                         else if (e.getSource() == submitAdd) {
@@ -1044,14 +1123,14 @@ public class GUI extends JFrame {
                                     
                                     // Update availability timeslots of 'doctors and nurses' accordingly
                                     //Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(oldTimeSlot) +" = 'y' WHERE name = '"+ oldStaff +"' AND date = '"+ oldDate +"' ;");
-                                    Main.setAvailability(true, oldTimeSlot, oldStaff, oldDate);
+                                    ////Main.setAvailability(true, oldTimeSlot, oldStaff, oldDate);
                                     //Main.execute("UPDATE doctorsandnurses SET "+ Main.getColumnNameForTimeSlot(timesListAdd.getSelectedItem().toString()) +" = 'n' WHERE name = '"+ Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()) +"' AND date = '"+ dateAddText.getText() +"' ;");
                                     if (Main.recordExists("SELECT * FROM doctorsandnurses WHERE date LIKE '"+dateAddText.getText()+"' AND  name = '"+Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex())+"' ;"))
                                         Main.setAvailability(false, timesListAdd.getSelectedItem().toString(), Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateAddText.getText());
                                     else
                                         Main.createAvailability(timesListAdd.getSelectedItem().toString(), Main.getKey(docsAndNursesKeyAndVal, staffListAdd.getSelectedIndex()), dateAddText.getText());
                                     
-                                    Main.setRoomsAvailability(true, oldRoom, oldDate, oldTimeSlot);
+                                    ////Main.setRoomsAvailability(true, oldRoom, oldDate, oldTimeSlot);
                                     if (Main.recordExists("SELECT * FROM room WHERE room = '"+ roomsListAdd.getSelectedItem().toString() +"' AND date = '"+ dateAddText.getText() +"' ;"))
                                         Main.setRoomsAvailability(false, roomsListAdd.getSelectedItem().toString(), dateAddText.getText(), timesListAdd.getSelectedItem().toString());
                                     else
@@ -1093,8 +1172,13 @@ public class GUI extends JFrame {
                         }
                         else if (e.getSource() == editEditButton) {
                             
-                            inEditingMode = true;
-                            addAppFrame();
+                            if (Main.dateIsInThePast(oldDate))
+                                JOptionPane.showMessageDialog(null, "You cannot edit an old appointment !!", "Incorrect Action !!", JOptionPane.ERROR_MESSAGE);
+                            else {
+                                inEditingMode = true;
+                                noEditingMadeYet = true;
+                                addAppFrame();
+                            }
                         }
                         else if (e.getSource() == removeEditButton) {
                             int ans = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this appointment?", "Title", JOptionPane.YES_NO_OPTION);

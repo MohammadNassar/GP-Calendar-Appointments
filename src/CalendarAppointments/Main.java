@@ -69,7 +69,9 @@ public class Main {
         //System.out.println(isAbsentOrOnHoliday("2","2014-04-10"));
         //System.out.println(hasAccessRight("1", "1234"));
         //boolean[] privileges = getAccessPrivileges("1"); for (boolean val : privileges) System.out.print(val + "\t");
-        print(getDaysOff(new String[0]));
+        //print(getDaysOff(new String[0]));
+        //String[][] arr = {{"10","mm"},{"30","ss"},{"50","nn"}}; System.out.println(getRowIndexWhereKeyIs(arr, "50"));
+        System.out.println(getDuration("09:30-10:30"));
     }
     
     public static void execute (String instruction) { // This method can be used for SQL queries that do not return a value, e.g. INSERT, UPDATE and REMOVE.
@@ -165,7 +167,7 @@ public class Main {
     public static Object[][] exchangeStaffIDsWithStaffNames(Object[][] table) {
         
         DatabaseConnection connect = DatabaseConnection.getInstance();
-        return connect.exchangePatientIDsWithPatientNames(table);
+        return connect.exchangeStaffIDsWithStaffNames(table);
     }
     
     public static Object[][] getCopyOf(Object[][] array) {
@@ -339,8 +341,11 @@ public class Main {
     public static String[][] getKeyAndValOfPatients() {
         
         DatabaseConnection connect = DatabaseConnection.getInstance();
-        String[][] array = connect.getKeyAndValOfPatients();
-        return array;
+        String[][] arrayOfPermanentPatients = connect.getKeyAndValOfPatients();
+        String[][] arrayOfTemporaryPatients = connect.getKeyAndValOfTempPatients();
+        //print(arrayOfPermanentPatients); print(arrayOfTemporaryPatients);
+        String[][] allPatients = concat2DArrays(arrayOfPermanentPatients, arrayOfTemporaryPatients);
+        return allPatients;
     }
     
     // Return true if all entries are unset or empty
@@ -379,15 +384,15 @@ public class Main {
         
         DatabaseConnection connect = DatabaseConnection.getInstance();
         
-        String[] dates = connect.getOneColumnFromTable("SELECT day FROM `gpdaysoff`;");
+        String[] dates = connect.getOneColumnFromTable("SELECT date FROM `gpdaysoff`;");
         
         //boolean docOrNurseAvailable = true;
         //for (String eachDate : dates){System.out.println(eachDate);}
         
         // Checking if the date (entered by user) is in the table called: 'gpdaysoff'.
         for (String aDate : dates) {
-            if (aDate.equals(date))
-                return false;
+            if (aDate.equals(date)){System.out.println(aDate);
+                return false;}
         }
         // Checking if the date (entered by user) is not on a 'Sunday'.
         if (getDayOfWeek(date) == 1)
@@ -592,6 +597,38 @@ public class Main {
                                 "17:15", "17:30"
         };
         return startTimes;
+    }
+    
+    public static int getDuration(String timeSlot) {
+        
+        String[] timeSlotHalves = timeSlot.split("-");
+        int start = 0;
+        int finish = 0;
+        //int duration = finishTime - startTime;
+        String[] startTimes = getAllStartTimes();
+        String[] finishTimes = getAllFinishTimes();
+        for (int i=0; i<startTimes.length; i++) {
+            if (startTimes[i].equals(timeSlotHalves[0]))
+                start = i;
+            if (finishTimes[i].equals(timeSlotHalves[1]))
+                finish = i;
+        }
+        int diff = finish - start;
+        //int duration = (diff == 0) ? 15 : (diff == 1) ? 30 : (diff == 2) ? 45 : 60;
+        int duration = (diff + 1) * 15;
+        return duration;
+    }
+    
+    public static int getRowIndex(String[] array, String value) {
+        
+        int num = 0; //String startTime = oldTimeSlot.substring(0, 5);
+        for (int i=0; i<array.length; i++) {
+            if (array[i].equals(value)) {
+                num = i;
+                break;
+            }
+        }
+        return num;
     }
     
     public static String[] getAllTimeSlotsForDuration(String durationStr) {
@@ -1133,6 +1170,18 @@ public class Main {
         return array[row][1];
     }
     
+    public static int getRowIndexWhereKeyIs(String[][] array, String key) {
+        
+        int num = 0;
+        for (int i=0; i<array.length; i++) {
+            if (array[i][0].equals(key)) {
+                num = i;
+                break;
+            }
+        }
+        return num;
+    }
+    
     public static void print(String str) {
         
         System.out.println(str);
@@ -1375,6 +1424,14 @@ public class Main {
         if (allNull)
             return true;
         return false;
+    }
+    
+    public static String[][] concat2DArrays(String[][] array1, String[][] array2) {
+        
+        String[][] concatArray = new String[array1.length+array2.length][];
+        System.arraycopy(array1, 0, concatArray, 0, array1.length);
+        System.arraycopy(array2, 0, concatArray, array1.length, array2.length);
+        return concatArray;
     }
     
     public static String[][] getKeyAndValOfDocsAndNurses() { // Return keys of staff members who are doctors and/or nurses.
