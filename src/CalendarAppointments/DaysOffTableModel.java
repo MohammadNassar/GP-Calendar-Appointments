@@ -49,6 +49,8 @@ public class DaysOffTableModel extends AbstractTableModel {
     
     public Object getValueAt(int row, int column) {
         
+        if (Main.isEmpty(tableData))
+            tableData = new Object[][] {{"", "", ""}};
         return tableData[row][column];
     }
     

@@ -102,16 +102,39 @@ public class Main {
         return privilegesOfEach;
     }
     
-    public static boolean hasAccessRight(String staffID, String password) {
+    public static boolean hasAccessRight(String username, String password) {
         
         DatabaseConnection connect = DatabaseConnection.getInstance();
         String tableName = "LoginDetails";
-        String[] columnNames = {"StaffID", "StaffPassword"};
-        String extraQuery = "WHERE StaffID = '"+ staffID +"' AND StaffPassword = '"+ password +"' ;";
+        String[] columnNames = {"StaffUsername", "StaffPassword"};
+        String extraQuery = "WHERE StaffUsername = '"+ username +"' AND StaffPassword = '"+ password +"' ;";
         String[] result = connect.getOneRowFromTable(tableName, columnNames, extraQuery);
         if (result.length == 0)
             return false;
         return true;
+    }
+    
+    public static String getStaffID(String username, String password) {
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        String tableName = "LoginDetails";
+        String[] columnNames = {"StaffID"};
+        String extraQuery = "WHERE StaffUsername = '"+ username +"' AND StaffPassword = '"+ password +"' ;";
+        String[] result = connect.getOneRowFromTable(tableName, columnNames, extraQuery);
+        
+        return result[0];
+    }
+    
+    public static String privilegesText(boolean[] privilegesArray) {
+        
+        String text = "You have the access rights of the following roles:\n";
+        if (privilegesArray.length != 0 && privilegesArray.length >= 4) {
+            if (privilegesArray[0] == true) text += "- Doctor\n";
+            if (privilegesArray[1] == true) text += "- Nurse\n";
+            if (privilegesArray[2] == true) text += "- Receptionist\n";
+            if (privilegesArray[3] == true) text += "- Office Manager\n";
+        }
+        return text;
     }
     
     public static String[][] getAppointments(String[] line) {
@@ -311,6 +334,27 @@ public class Main {
                             "VALUES (" + values + ") ;";
         //System.out.println(update);
         connect.execute(update);
+    }
+    
+    public static void addSummaryToAppointment(String id, String summaryText) {
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        String query = "UPDATE appointments SET summary = '"+ summaryText +"' WHERE appId = '"+ id +"' ;";
+        connect.execute(query);
+    }
+    
+    public static void addGPDayOff(String date, String type, String description) {
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        String query = "INSERT INTO gpdaysoff (date, type, description) VALUES ('" + date + "', '"+ type +"', '"+ description +"') ;";
+        connect.execute(query);
+    }
+    
+    public static void removeGPDayOff(String date) {
+        
+        DatabaseConnection connect = DatabaseConnection.getInstance();
+        String query = "DELETE FROM gpdaysoff WHERE date = '" + date + "' ;";
+        connect.execute(query);
     }
     
     public static void editAppointment(String[] array, String id) {

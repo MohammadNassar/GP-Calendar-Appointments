@@ -13,6 +13,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
 import java.util.ArrayList;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -73,6 +75,12 @@ public class GUI extends JFrame {
         private JTextField searchDaysOffText;
         private DaysOffTableModel daysOffTableModel;
         private JTable daysOffTable;
+        
+        // Add summary Frame
+        private JFrame addSummaryFrame;
+        private JTextArea summaryText;
+        private JButton submitSummaryButton, resetSummaryButton;
+        private JTextField summaryCounter;
         
 	public GUI() {
 		
@@ -232,8 +240,8 @@ public class GUI extends JFrame {
 		//finishTimeTextField = new JTextField(15);
 		searchButton = new JButton("Search");
                 resetButton = new JButton("Reset");
-		addButton = new JButton("Add");
-		updateButton = new JButton("Edit / Remove");
+		addButton = new JButton("Add Appointment");
+		updateButton = new JButton("Edit / Remove / Add Summary");
 		setHolidaysButton = new JButton("Holidays & Days Off");
                 logoutButton = new JButton("Log Out");
 		
@@ -286,13 +294,13 @@ public class GUI extends JFrame {
 		c.gridy = 15;
 		//optionsPanel.add(finishTimeTextField, c);
 		c.gridy = 16; c.gridx = -1;
-		optionsPanel.add(searchButton, c);
-		c.gridy = 16; c.gridx = 1;
-		optionsPanel.add(resetButton, c);
-		c.gridy = 18; c.gridx = -1;
 		optionsPanel.add(addButton, c);
-		c.gridy = 18; c.gridx = 1;
+		c.gridy = 16; c.gridx = 1;
+		optionsPanel.add(searchButton, c);
+		c.gridy = 18; c.gridx = -1;
 		optionsPanel.add(updateButton, c);
+		c.gridy = 18; c.gridx = 1;
+		optionsPanel.add(resetButton, c);
 		c.gridy = 19; c.gridx = -1;
 		optionsPanel.add(setHolidaysButton, c);
                 c.gridy = 19; c.gridx = 1;
@@ -565,7 +573,7 @@ public class GUI extends JFrame {
             
             editAppFrame = new JFrame("Appointment Details");
             editAppFrame.setVisible(true);
-            editAppFrame.setBounds(400, 200, 350, 450);
+            editAppFrame.setBounds(400, 200, 500, 450);
             JPanel editAppPanel = new JPanel();
             editAppPanel.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
@@ -578,6 +586,9 @@ public class GUI extends JFrame {
             
             appInfoArea = new JTextArea(rowInfo);
             appInfoArea.setEditable(false);
+            appInfoArea.setSize(new Dimension(450, 200));
+            appInfoArea.setLineWrap(true);
+            JScrollPane appInfoAreaScroll = new JScrollPane(appInfoArea);
             
             addSummaryButton = new JButton("Add Summary");
             editEditButton = new JButton("Edit");
@@ -592,7 +603,7 @@ public class GUI extends JFrame {
             c.gridy = 3;
             editAppPanel.add(appInfoLabel, c);
             c.gridy = 4;
-            editAppPanel.add(appInfoArea, c);
+            editAppPanel.add(appInfoAreaScroll, c);
             c.gridy = 5;
             editAppPanel.add(addSummaryButton, c);
             c.gridy = 6;
@@ -626,6 +637,61 @@ public class GUI extends JFrame {
             });
         }
         
+        public void addSummaryFrame() {
+            
+            editAppFrame.setEnabled(false);
+            
+            addSummaryFrame = new JFrame("Days Off and Holidays");
+            addSummaryFrame.setVisible(true);
+            addSummaryFrame.setBounds(400, 200, 660, 400);
+            JPanel addSummaryPanel = new JPanel();
+            addSummaryPanel.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            
+            summaryText = new JTextArea(10, 15);
+            summaryText.setLineWrap(true);
+            JScrollPane summaryTextScroll = new JScrollPane(summaryText);
+            summaryCounter = new JTextField(5);
+            submitSummaryButton = new JButton("Submit Summary");
+            resetSummaryButton = new JButton("Reset");
+            
+            c.gridy = 1; c.gridx = 1;
+            addSummaryPanel.add(summaryTextScroll, c);
+            c.gridy = 1; c.gridx = 2;
+            addSummaryPanel.add(summaryCounter, c);
+            c.gridy = 2; c.gridx = 1;
+            addSummaryPanel.add(submitSummaryButton, c);
+            c.gridy = 2; c.gridx = 2;
+            addSummaryPanel.add(resetSummaryButton, c);
+            JScrollPane daysOffScroll = new JScrollPane(addSummaryPanel);
+            
+            addSummaryFrame.add(daysOffScroll);
+            
+            Listener listen = new Listener();
+            
+            submitSummaryButton.addActionListener(listen);
+            resetSummaryButton.addActionListener(listen);
+            
+            summaryText.getDocument().addDocumentListener( new DocumentListener() {
+                
+                public void changedUpdate(DocumentEvent e) {
+                    summaryCounter.setText(Integer.toString(summaryText.getText().length()));
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    summaryCounter.setText(Integer.toString(summaryText.getText().length()));
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    summaryCounter.setText(Integer.toString(summaryText.getText().length()));
+                }
+            });
+            
+            addSummaryFrame.addWindowListener( new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {
+                    editAppFrame.setEnabled(true);
+                }
+            });
+        }
+        
         public void daysOffFrame() {
             
             appFrame.setEnabled(false);
@@ -647,7 +713,7 @@ public class GUI extends JFrame {
             daysOffTableModel = new DaysOffTableModel();
             daysOffTable = new JTable(daysOffTableModel);
             daysOffTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            daysOffTable.setPreferredScrollableViewportSize(new Dimension(300, 200));
+            daysOffTable.setPreferredScrollableViewportSize(new Dimension(300, 300));
             daysOffTable.getColumnModel().getColumn(0).setPreferredWidth(90);
             daysOffTable.getColumnModel().getColumn(1).setPreferredWidth(50);
             daysOffTable.getColumnModel().getColumn(2).setPreferredWidth(160);
@@ -683,6 +749,7 @@ public class GUI extends JFrame {
                 }
             });
         }
+        
         public void updateListOfStaff() {
             
             //System.out.println("focusLost");
@@ -859,7 +926,7 @@ public class GUI extends JFrame {
             
             String rowInfo = "Patient ID:\t\t" + id + "\nAppointment Type:\t" + type + "\nPatient Name:\t\t" + patient + 
                     "\nDate:\t\t" + date + "\nDoc/Nurse Name:\t" + staff + "\nAppointment Time Slot:\t" + timeSlot + 
-                    "\nRoom:\t\t" + room + "\nSummary:\t\t" + summary + "\n";
+                    "\nRoom:\t\t" + room + "\n____________________________________________________________\n\t\tSummary:\n" + summary + "\n";
             
             /*idEditText.setText(id);
             if (type.equalsIgnoreCase("routine"))
@@ -896,15 +963,16 @@ public class GUI extends JFrame {
 				
 				if (! user.equals("") && ! pass.equals("")) {
 					
-					boolean access= Main.hasAccessRight(user, pass);
+					boolean access = Main.hasAccessRight(user, pass);
 					
 					if (access) {
-                                            boolean[] privileges = Main.getAccessPrivileges(user);
+                                            String staffID = Main.getStaffID(user, pass);
+                                            boolean[] privileges = Main.getAccessPrivileges(staffID);
                                             userIsDoctor = privileges[0];
                                             userIsNurse = privileges[1];
                                             userIsReceptionist = privileges[2];
                                             userIsOfficeManager = privileges[3];
-                                            JOptionPane.showMessageDialog(null, "You have successfully accessed the program.", "Access Guaranteed", JOptionPane.WARNING_MESSAGE);
+                                            JOptionPane.showMessageDialog(null, "You have successfully accessed the program.\n\n"+Main.privilegesText(privileges), "Access Guaranteed", JOptionPane.INFORMATION_MESSAGE);
                                             appFrame();
 					}
 					else {
@@ -1166,7 +1234,7 @@ public class GUI extends JFrame {
                         if (e.getSource() == addSummaryButton) {
                             
                             if (userIsDoctor)
-                                JOptionPane.showMessageDialog(null, "You are a Doctor");
+                                addSummaryFrame();
                             else
                                 JOptionPane.showMessageDialog(null, "Sorry you do not have permission to add a summary to an appointment !!", "Error", JOptionPane.ERROR_MESSAGE);
                         }
@@ -1204,12 +1272,48 @@ public class GUI extends JFrame {
                             }
                         }
                         
+                        // addSummaryFrame actions listener
+                        if (e.getSource() == submitSummaryButton) {
+                            if (summaryText.getText().length() > 255)
+                                JOptionPane.showMessageDialog(null, "You have exceeded the maximum length of a summary, which is 255 characters !!\nPlease reduce the text and re-submit.", "Error", JOptionPane.ERROR_MESSAGE);
+                            else {
+                                String summaryTextString = summaryText.getText(); //JOptionPane.showMessageDialog(null, summaryTextString);
+                                Main.addSummaryToAppointment(id, summaryTextString);
+                                JOptionPane.showMessageDialog(null, "The summary has been added to the appointment record with ID "+ id +" successfully.");
+                                addSummaryFrame.dispose();
+                                editAppFrame.dispose();
+                                appFrame.setVisible(true);
+                                appFrame.setEnabled(true);
+                                tableModel.setFilter(new String[]{});
+                                tableModel.fireTableDataChanged();
+                            }
+                        }
+                        else if (e.getSource() == resetSummaryButton) {
+                            
+                            int ans = JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the text area?", "Clear text area?", JOptionPane.YES_NO_OPTION);
+                            if (ans == JOptionPane.YES_OPTION)
+                                summaryText.setText("");
+                        }
+                        
                         // setHolidaysFrame actions listener
                         if (e.getSource() == searchDaysOff) {
                             
                             String[] array = {searchDaysOffText.getText().toString()};
-                            daysOffTableModel.setFilter(array);
-                            daysOffTableModel.fireTableDataChanged();
+                            if (! array[0].equals("")) {
+                                if (Main.recordExists("SELECT date FROM gpdaysoff WHERE date LIKE '"+ array[0] +"' ;")) {
+                                    daysOffTableModel.setFilter(array);
+                                    daysOffTableModel.fireTableDataChanged();
+                                }
+                                else {
+                                    JOptionPane.showMessageDialog(null, "This date does not exist in the list of the GP holidays !!", "Error", JOptionPane.ERROR_MESSAGE);
+                                    daysOffTableModel.setFilter(new String[]{});
+                                    daysOffTableModel.fireTableDataChanged();
+                                }
+                            }
+                            else {
+                                daysOffTableModel.setFilter(new String[]{});
+                                daysOffTableModel.fireTableDataChanged();
+                            }
                         }
                         else if (e.getSource() == resetDaysOff) {
                             
@@ -1222,12 +1326,18 @@ public class GUI extends JFrame {
                             String date = JOptionPane.showInputDialog("Please enter a date...");
                             if (! date.equals("")) {
                                 if (Main.dateIsInCorrectFormat(date)) {
-                                    if (Main.recordExists("SELECT * FROM gpdaysoff WHERE day LIKE '" + date + "'; "))
+                                    if (Main.recordExists("SELECT * FROM gpdaysoff WHERE date LIKE '" + date + "'; "))
                                         JOptionPane.showMessageDialog(null, "This day already exists, please try again.");
                                     else {
-                                        Main.execute("INSERT INTO gpdaysoff (day) VALUES ('" + date + "') ;");
-                                        daysOffTableModel.setFilter(new String[]{});
-                                        daysOffTableModel.fireTableDataChanged();
+                                        String type = JOptionPane.showInputDialog("Please enter the type of holiday/day off\n(Maximum 45 characters !!)...");
+                                        String description = JOptionPane.showInputDialog("Please enter a description of the holiday/day off\n(Maximum 45 characters !!)...");
+                                        if (type.length() <= 45 && description.length() <= 45) {
+                                            Main.addGPDayOff(date, type, description);
+                                            daysOffTableModel.setFilter(new String[]{});
+                                            daysOffTableModel.fireTableDataChanged();
+                                        }
+                                        else
+                                            JOptionPane.showMessageDialog(null, "Sorry you have entered too many characters for 'Type' and/or 'Description' !!\nThe limit is 45 characters, please try again.", "Error", JOptionPane.ERROR_MESSAGE);
                                     }
                                 }
                                 else {
@@ -1244,13 +1354,13 @@ public class GUI extends JFrame {
                                 if (type.equalsIgnoreCase("Public"))
                                     JOptionPane.showMessageDialog(null, "This is a public holiday and cannot be deleted !!", "Error", JOptionPane.ERROR_MESSAGE);
                                 else {
-                                    int ans = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this appointment?", "Title", JOptionPane.YES_NO_OPTION);
+                                    int ans = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this holiday?", "Title", JOptionPane.YES_NO_OPTION);
                                     if (ans == JOptionPane.YES_OPTION) {
                                         int row = daysOffTable.getSelectedRow();
-                                        String day = (String) daysOffTable.getModel().getValueAt(row, 0);
+                                        String date = (String) daysOffTable.getModel().getValueAt(row, 0);
                                         // Delete appointment from table appointments.
-                                        Main.execute("DELETE FROM gpdaysoff WHERE day = '" + day + "' ;");
-                                        JOptionPane.showMessageDialog(null, "Appointment has been deleted successfully.");
+                                        Main.removeGPDayOff(date);
+                                        JOptionPane.showMessageDialog(null, "Holiday/day off has been deleted successfully.");
                                         daysOffTableModel.setFilter(new String[]{});
                                         daysOffTableModel.fireTableDataChanged();
                                     }
