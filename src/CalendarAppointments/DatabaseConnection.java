@@ -17,8 +17,8 @@ public class DatabaseConnection {
         String loginUser = "SEGA";
         String loginPassword = "";
         String databaseName = "SEGA";
-        String loginUrl = "jdbc:mysql://dbprojects.eecs.qmul.ac.uk:3306/" + databaseName;  // (On Campus)
-        //String loginUrl = "jdbc:mysql://localhost:3307/" + databaseName;  // (Off Campus) ==> (requires reverse tunnelling see guide) ==> TUNNELING
+        //String loginUrl = "jdbc:mysql://dbprojects.eecs.qmul.ac.uk:3306/" + databaseName;  // (On Campus)
+        String loginUrl = "jdbc:mysql://localhost:3307/" + databaseName;  // (Off Campus) ==> (requires reverse tunnelling see guide) ==> TUNNELING
         // For tunnelling enter this into the 'mobaXterm' program ==> ssh -N -L 3307:dbprojects.eecs.qmul.ac.uk:3306 mn302@bert.eecs.qmul.ac.uk
         
         try {
