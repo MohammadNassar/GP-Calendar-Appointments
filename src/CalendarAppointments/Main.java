@@ -8,6 +8,7 @@ package CalendarAppointments;
 //import CalendarAppointments.DatabaseConnection;
 import java.util.*;
 import java.text.*;
+import javax.swing.JOptionPane;
 
 public class Main {
 
@@ -910,7 +911,8 @@ public class Main {
         try {
             date = dateFormat.parse(strDate);
         } catch (ParseException e) {
-            System.out.println("Unable to parse date format object into date. ==> " + e);
+            JOptionPane.showMessageDialog(null, "Unable to parse date format object into date. ==> " + e, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to parse date format object into date. ==> " + e);
         }
         
         return date;
@@ -1610,4 +1612,5 @@ public class Main {
         //String[][] arr = {{"10","mm"},{"30","ss"},{"50","nn"}}; System.out.println(getRowIndexWhereKeyIs(arr, "50"));
         //System.out.println(getDuration("09:30-10:30"));
     }
+    
 }

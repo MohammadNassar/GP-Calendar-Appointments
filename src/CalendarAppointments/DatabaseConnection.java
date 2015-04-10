@@ -4,6 +4,7 @@ package CalendarAppointments;
 
 import java.sql.*;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 
 public class DatabaseConnection {
     
@@ -12,13 +13,13 @@ public class DatabaseConnection {
     private Statement statement;
     private ResultSet result;
     
-    public DatabaseConnection() {
+    private DatabaseConnection() {
         
         String loginUser = "SEGA";
         String loginPassword = "";
         String databaseName = "SEGA";
-        String loginUrl = "jdbc:mysql://dbprojects.eecs.qmul.ac.uk:3306/" + databaseName;  // (On Campus)
-        //String loginUrl = "jdbc:mysql://localhost:3307/" + databaseName;  // (Off Campus) ==> (requires reverse tunnelling see guide) ==> TUNNELING
+        //String loginUrl = "jdbc:mysql://dbprojects.eecs.qmul.ac.uk:3306/" + databaseName;  // (On Campus)
+        String loginUrl = "jdbc:mysql://localhost:3307/" + databaseName;  // (Off Campus) ==> (requires reverse tunnelling see guide) ==> TUNNELING
         // For tunnelling enter this into the 'mobaXterm' program ==> ssh -N -L 3307:dbprojects.eecs.qmul.ac.uk:3306 mn302@bert.eecs.qmul.ac.uk
         
         try {
@@ -35,9 +36,11 @@ public class DatabaseConnection {
             statement = connect.createStatement();
             
         } catch (ClassNotFoundException c) {
-            System.out.println("Unable to create the connection. ==> ("+c+")");
+            JOptionPane.showMessageDialog(null, "Unable to create the connection. ==> " + c, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to create the connection. ==> ("+c+")");
         } catch (SQLException s) {
-            System.out.println("Unable to get connection or create statement. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to get connection or create statement. ==> " + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to get connection or create statement. ==> ("+s+")");
         }
     }
     
@@ -92,7 +95,8 @@ public class DatabaseConnection {
             //exchangeStaffIDsWithStaffNames(rowsInTable);
             
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
         
         return rowsInTable;
@@ -136,7 +140,8 @@ public class DatabaseConnection {
             }
             
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
         
         return rowsInTable;
@@ -174,7 +179,8 @@ public class DatabaseConnection {
             array = convert2DArrayListTo2DArray(list);
         }
         catch (SQLException s) {
-        System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
         return array;
     }
@@ -211,7 +217,8 @@ public class DatabaseConnection {
             array = convert2DArrayListTo2DArray(list);
         }
         catch (SQLException s) {
-        System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
         return array;
     }
@@ -252,7 +259,8 @@ public class DatabaseConnection {
                 array[i][2] = name;
             }
             catch (SQLException s) {
-                System.out.println("Unable to execute query. ==> ("+s+")");
+                JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+                //System.out.println("Unable to execute query. ==> ("+s+")");
             }
         }
         return array;
@@ -286,7 +294,8 @@ public class DatabaseConnection {
                 array[i][2] = name;
             }
             catch (SQLException s) {
-                System.out.println("Unable to execute query. ==> ("+s+")");
+                JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+                //System.out.println("Unable to execute query. ==> ("+s+")");
             }
         }
         return array;
@@ -314,7 +323,8 @@ public class DatabaseConnection {
                 array[i][col] = name;
             }
             catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+                JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+                //System.out.println("Unable to execute query. ==> ("+s+")");
             }
         }
         return array;
@@ -357,7 +367,8 @@ public class DatabaseConnection {
             }
             
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
         
         return rowsInTable;
@@ -390,7 +401,8 @@ public class DatabaseConnection {
             }
             
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
         
         return rowsInTable;
@@ -422,7 +434,8 @@ public class DatabaseConnection {
                 }
             }
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
         
         return availabilityRow;
@@ -455,7 +468,8 @@ public class DatabaseConnection {
                 }
             }
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
         
         return availabilityRow;
@@ -487,7 +501,8 @@ public class DatabaseConnection {
                 }
             }
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
         
         return availabilityRow;
@@ -501,7 +516,8 @@ public class DatabaseConnection {
             if (result.next())
                 exists = true;
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
         return exists;
     }
@@ -537,7 +553,8 @@ public class DatabaseConnection {
             }
             
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
     }
     
@@ -548,7 +565,8 @@ public class DatabaseConnection {
         try {
             statement.executeUpdate(instruction);
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
     }
     
@@ -558,7 +576,8 @@ public class DatabaseConnection {
         try {
             statement.executeUpdate(instruction);
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
     }
     // Retrieve records from the database
@@ -586,7 +605,8 @@ public class DatabaseConnection {
             }
             rowsInTable = convert2DArrayListTo2DArray(list);
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
         
         return rowsInTable;
@@ -619,7 +639,8 @@ public class DatabaseConnection {
             }
             rowToReturn = convertArrayListToArray(list);
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
         return rowToReturn;
     }
@@ -653,7 +674,8 @@ public class DatabaseConnection {
             }
             tableToReturn = convert2DArrayListTo2DArray(list);
         } catch (SQLException s) {
-            System.out.println("Unable to execute query. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to execute query. ==> ("+s+")");
         }
         return tableToReturn;
     }
@@ -683,7 +705,8 @@ public class DatabaseConnection {
             connect.close();
             System.out.println("Connection Closed !!");
         } catch (SQLException s) {
-            System.out.println("Unable to get connection or create statement. ==> ("+s+")");
+            JOptionPane.showMessageDialog(null, "Unable to execute query !!\n" + s, "Error", JOptionPane.ERROR_MESSAGE);
+            //System.out.println("Unable to get connection or create statement. ==> ("+s+")");
         }
     }
     
