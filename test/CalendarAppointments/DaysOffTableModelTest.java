@@ -17,9 +17,9 @@ import static org.junit.Assert.*;
  *
  * @author hp
  */
-public class TableModelTest {
+public class DaysOffTableModelTest {
     
-    public TableModelTest() {
+    public DaysOffTableModelTest() {
     }
     
     @BeforeClass
@@ -39,39 +39,25 @@ public class TableModelTest {
     }
 
     /**
-     * Test of setFilter method, of class TableModel.
+     * Test of setFilter method, of class DaysOffTableModel.
      */
     @Test
     public void testSetFilter() {
         System.out.println("setFilter");
         String[] filterArray = null;
-        TableModel instance = new TableModel();
+        DaysOffTableModel instance = new DaysOffTableModel();
         instance.setFilter(filterArray);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
     /**
-     * Test of getCopyOf method, of class TableModel.
-     */
-    @Test
-    public void testGetCopyOf() {
-        System.out.println("getCopyOf");
-        Object[][] array = null;
-        Object[][] expResult = null;
-        Object[][] result = TableModel.getCopyOf(array);
-        assertArrayEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getColumnsNames method, of class TableModel.
+     * Test of getColumnsNames method, of class DaysOffTableModel.
      */
     @Test
     public void testGetColumnsNames() {
         System.out.println("getColumnsNames");
-        TableModel instance = new TableModel();
+        DaysOffTableModel instance = new DaysOffTableModel();
         String[] expResult = null;
         String[] result = instance.getColumnsNames();
         assertArrayEquals(expResult, result);
@@ -80,13 +66,13 @@ public class TableModelTest {
     }
 
     /**
-     * Test of getColumnName method, of class TableModel.
+     * Test of getColumnName method, of class DaysOffTableModel.
      */
     @Test
     public void testGetColumnName() {
         System.out.println("getColumnName");
         int column = 0;
-        TableModel instance = new TableModel();
+        DaysOffTableModel instance = new DaysOffTableModel();
         String expResult = "";
         String result = instance.getColumnName(column);
         assertEquals(expResult, result);
@@ -95,12 +81,12 @@ public class TableModelTest {
     }
 
     /**
-     * Test of getTableData method, of class TableModel.
+     * Test of getTableData method, of class DaysOffTableModel.
      */
     @Test
     public void testGetTableData() {
         System.out.println("getTableData");
-        TableModel instance = new TableModel();
+        DaysOffTableModel instance = new DaysOffTableModel();
         Object[][] expResult = null;
         Object[][] result = instance.getTableData();
         assertArrayEquals(expResult, result);
@@ -109,12 +95,12 @@ public class TableModelTest {
     }
 
     /**
-     * Test of getRowCount method, of class TableModel.
+     * Test of getRowCount method, of class DaysOffTableModel.
      */
     @Test
     public void testGetRowCount() {
         System.out.println("getRowCount");
-        TableModel instance = new TableModel();
+        DaysOffTableModel instance = new DaysOffTableModel();
         int expResult = 0;
         int result = instance.getRowCount();
         assertEquals(expResult, result);
@@ -123,12 +109,12 @@ public class TableModelTest {
     }
 
     /**
-     * Test of getColumnCount method, of class TableModel.
+     * Test of getColumnCount method, of class DaysOffTableModel.
      */
     @Test
     public void testGetColumnCount() {
         System.out.println("getColumnCount");
-        TableModel instance = new TableModel();
+        DaysOffTableModel instance = new DaysOffTableModel();
         int expResult = 0;
         int result = instance.getColumnCount();
         assertEquals(expResult, result);
@@ -137,14 +123,14 @@ public class TableModelTest {
     }
 
     /**
-     * Test of getValueAt method, of class TableModel.
+     * Test of getValueAt method, of class DaysOffTableModel.
      */
     @Test
     public void testGetValueAt() {
         System.out.println("getValueAt");
         int row = 0;
         int column = 0;
-        TableModel instance = new TableModel();
+        DaysOffTableModel instance = new DaysOffTableModel();
         Object expResult = null;
         Object result = instance.getValueAt(row, column);
         assertEquals(expResult, result);
@@ -153,7 +139,7 @@ public class TableModelTest {
     }
 
     /**
-     * Test of setValueAt method, of class TableModel.
+     * Test of setValueAt method, of class DaysOffTableModel.
      */
     @Test
     public void testSetValueAt() {
@@ -161,20 +147,20 @@ public class TableModelTest {
         Object value = null;
         int row = 0;
         int col = 0;
-        TableModel instance = new TableModel();
+        DaysOffTableModel instance = new DaysOffTableModel();
         instance.setValueAt(value, row, col);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
     /**
-     * Test of getColumnClass method, of class TableModel.
+     * Test of getColumnClass method, of class DaysOffTableModel.
      */
     @Test
     public void testGetColumnClass() {
         System.out.println("getColumnClass");
         int c = 0;
-        TableModel instance = new TableModel();
+        DaysOffTableModel instance = new DaysOffTableModel();
         Class expResult = null;
         Class result = instance.getColumnClass(c);
         assertEquals(expResult, result);
@@ -183,14 +169,14 @@ public class TableModelTest {
     }
 
     /**
-     * Test of isCellEditable method, of class TableModel.
+     * Test of isCellEditable method, of class DaysOffTableModel.
      */
     @Test
     public void testIsCellEditable() {
         System.out.println("isCellEditable");
         int row = 0;
         int col = 0;
-        TableModel instance = new TableModel();
+        DaysOffTableModel instance = new DaysOffTableModel();
         boolean expResult = false;
         boolean result = instance.isCellEditable(row, col);
         assertEquals(expResult, result);

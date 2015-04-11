@@ -97,6 +97,20 @@ public class DatabaseConnectionTest {
     }
 
     /**
+     * Test of getKeyAndValOfTempPatients method, of class DatabaseConnection.
+     */
+    @Test
+    public void testGetKeyAndValOfTempPatients() {
+        System.out.println("getKeyAndValOfTempPatients");
+        DatabaseConnection instance = null;
+        String[][] expResult = null;
+        String[][] result = instance.getKeyAndValOfTempPatients();
+        assertArrayEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
      * Test of exchangePatientIDsWithPatientNames method, of class DatabaseConnection.
      */
     @Test
@@ -106,6 +120,36 @@ public class DatabaseConnectionTest {
         DatabaseConnection instance = null;
         Object[][] expResult = null;
         Object[][] result = instance.exchangePatientIDsWithPatientNames(array);
+        assertArrayEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of exchangePermanentPatientIDsWithPatientNames method, of class DatabaseConnection.
+     */
+    @Test
+    public void testExchangePermanentPatientIDsWithPatientNames() {
+        System.out.println("exchangePermanentPatientIDsWithPatientNames");
+        Object[][] array = null;
+        DatabaseConnection instance = null;
+        Object[][] expResult = null;
+        Object[][] result = instance.exchangePermanentPatientIDsWithPatientNames(array);
+        assertArrayEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of exchangeTempPatientIDsWithPatientNames method, of class DatabaseConnection.
+     */
+    @Test
+    public void testExchangeTempPatientIDsWithPatientNames() {
+        System.out.println("exchangeTempPatientIDsWithPatientNames");
+        Object[][] array = null;
+        DatabaseConnection instance = null;
+        Object[][] expResult = null;
+        Object[][] result = instance.exchangeTempPatientIDsWithPatientNames(array);
         assertArrayEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -322,6 +366,34 @@ public class DatabaseConnectionTest {
     }
 
     /**
+     * Test of isEmpty method, of class DatabaseConnection.
+     */
+    @Test
+    public void testIsEmpty_ObjectArr() {
+        System.out.println("isEmpty");
+        Object[] array = null;
+        boolean expResult = false;
+        boolean result = DatabaseConnection.isEmpty(array);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of isEmpty method, of class DatabaseConnection.
+     */
+    @Test
+    public void testIsEmpty_ObjectArrArr() {
+        System.out.println("isEmpty");
+        Object[][] array = null;
+        boolean expResult = false;
+        boolean result = DatabaseConnection.isEmpty(array);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
      * Test of close method, of class DatabaseConnection.
      */
     @Test
@@ -358,6 +430,21 @@ public class DatabaseConnectionTest {
         DatabaseConnection instance = null;
         String[][] expResult = null;
         String[][] result = instance.convert2DArrayListTo2DArray(list);
+        assertArrayEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of concat2DArrays method, of class DatabaseConnection.
+     */
+    @Test
+    public void testConcat2DArrays() {
+        System.out.println("concat2DArrays");
+        Object[][] array1 = null;
+        Object[][] array2 = null;
+        Object[][] expResult = null;
+        Object[][] result = DatabaseConnection.concat2DArrays(array1, array2);
         assertArrayEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");

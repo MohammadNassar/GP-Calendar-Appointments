@@ -1,11 +1,10 @@
 package CalendarAppointments;
 
 import javax.swing.table.AbstractTableModel;
-import javax.swing.*;
 
 public class DaysOffTableModel extends AbstractTableModel {
     
-    private String[] columnNames = {"Days Off Dates", "Type", "Description"};
+    private final String[] columnNames = {"Days Off Dates", "Type", "Description"};
     private String[] filter = {""};
     private Object[][] tableData;
     
@@ -13,7 +12,6 @@ public class DaysOffTableModel extends AbstractTableModel {
         
         super();
         tableData = Main.getDaysOff(filter);
-        //tableData = new Object[][]{{"Hey"}};
     }
     
     public void setFilter(String[] filterArray) {
@@ -67,11 +65,7 @@ public class DaysOffTableModel extends AbstractTableModel {
     }
     
     public boolean isCellEditable(int row, int col) {
-        
-        /*if (col < 2) // Means if row index selected is less than 2, then it cannot be edited.
-            return false;
-        else
-            return true;*/
+        // It means do not let any cell in the table to be edited by user from within the table itself.
         return false;
     }
 }

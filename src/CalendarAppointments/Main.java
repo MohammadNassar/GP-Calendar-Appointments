@@ -1,11 +1,5 @@
 package CalendarAppointments;
 
-// 'Calendar Appointments' module - By Mohammad Nassar - ID No. 120132108
-// Version 3 - Adding a record/row to the database based on user request made by his input
-// Appropriate input for method: 'getRecords' is:  ,Routine,,,13/01/2014,,  or  ,Routine,,,,,  or (to view all appointments) 	,,,,,,
-// Appropriate input for method: 'addAppointment' is:  'routine', 30, 50, '01/01/1000', '12:34', '23:45'
-
-//import CalendarAppointments.DatabaseConnection;
 import java.util.*;
 import java.text.*;
 import javax.swing.JOptionPane;
@@ -87,8 +81,6 @@ public class Main {
         
         String query = "SELECT * FROM appointments ";
         boolean condition = false; // Initially assume that some properties have been set.
-        //String query = "SELECT appId, appType, patientId, appWithStaffId, date, startTime, finishTime FROM appointments;";
-        
         
         for (int i=0; i<line.length; i++)
             line[i] = line[i].trim();
@@ -373,9 +365,6 @@ public class Main {
         DatabaseConnection connect = DatabaseConnection.getInstance();
         
         String[] dates = connect.getOneColumnFromTable("SELECT date FROM `gpdaysoff`;");
-        
-        //boolean docOrNurseAvailable = true;
-        //for (String eachDate : dates){System.out.println(eachDate);}
         
         // Checking if the date (entered by user) is in the table called: 'gpdaysoff'.
         for (String aDate : dates) {
@@ -893,9 +882,6 @@ public class Main {
         int month = Integer.parseInt(dates[1]) - 1;
         int day = Integer.parseInt(dates[2]);
         
-        /*Calendar calendar = GregorianCalendar.getInstance();
-        calendar.setTime(stringToDate(date));*/
-        //Calendar calendar = new GregorianCalendar(2014, 01, 12, 15, 20);
         Calendar calendar = new GregorianCalendar(year, month, day);
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
         // If the number is 1 then day is Sunday, and if it's 7 then it's Saturday, and so on.
@@ -924,9 +910,6 @@ public class Main {
         DateFormat dateFormat = new SimpleDateFormat(dateFormats[0]);
         Date date = new Date();
         String dateAsStr = dateFormat.format(date);
-        // Or Also
-        /*Calendar calendar = Calendar.getInstance();
-        String dateAsStr = dateFormat.format(calendar.getTime());*/
         //System.out.println(dateAsStr);
         return dateAsStr;
     }
@@ -1044,8 +1027,6 @@ public class Main {
     
     public static String[] getAllRooms() {
         
-        /*DatabaseConnection connect = DatabaseConnection.getInstance();
-        String[] allRooms = connect.getOneColumnFromTable("SELECT roomId FROM room ;");*/
         String[] allRooms = {"A001", "A002", "A003", "A004", "A005", "A006", "A007", "A008", "A009", "A010", 
                              "A101", "A102", "A103", "A104", "A105", "A106", "A107", "A108", "A109", "A110" 
         };
@@ -1069,18 +1050,9 @@ public class Main {
     public static String[][] getTimesFromRoom(String date) {
         
         DatabaseConnection connect = DatabaseConnection.getInstance();
-        //String[] allRooms = getAllRooms();
         String query = "SELECT " +
         "a9,b9,c9,d9,a10,b10,c10,d10,a11,b11,c11,d11,a12,b12,c12,d12,a13,b13,c13,d13,a14,b14,c14,d14,a15,b15,c15,d15,a16,b16,c16,d16,a17,b17 " +
         ", room, date FROM room ";
-        //query += "WHERE room LIKE ";
-        /*for (int i=0; i<allRooms.length; i++) {
-            if (i != allRooms.length-1)
-                query += "'" + allRooms[i] + "' OR ";
-            else
-                query += "'" + allRooms[i] + "' ";
-        }
-        query +=  "AND date LIKE '" + date + "' ;";*/
         query += "WHERE date LIKE '" + date + "' ;";
         System.out.println(query);
         String[][] array = connect.getTimesFromRoom(query);
@@ -1114,7 +1086,7 @@ public class Main {
         // Check the toConsider rooms for availability at specified time slot.
         for (int i=0; i<toConsiderList.size(); i++) {
             // Find row in 'timesFromRoom' where value equals toConsiderList.get(i).
-            findRow : for(int j=0; j<timesFromRoom.length; j++) {
+            for(int j=0; j<timesFromRoom.length; j++) {
                 if (timesFromRoom[j][roomsColumn].equals(toConsiderList.get(i))) {
                     boolean flag = true;
                     for (int k=0; k<columnIndeces.length; k++) {
@@ -1123,7 +1095,6 @@ public class Main {
                     }
                     if (flag)
                         OKList.add(toConsiderList.get(i));
-                    //break findRow;
                 }
             }
         }
@@ -1230,8 +1201,6 @@ public class Main {
     
     private static boolean isInt(double num) {
         
-        //if ( num == Math.floor(num) && !Double.isInfinite(num))
-        //System.out.println((num / 4) + "\n" + (int)(num / 4));
         if ((num / 4) == (int) (num / 4))
             return true;
         return false;
@@ -1481,74 +1450,6 @@ public class Main {
         connect.close();
     }
     
-    public static void getAppointmentsNoGUI() {
-        
-        DatabaseConnection connect = DatabaseConnection.getInstance();
-        
-        String query = "SELECT * FROM appointments ";
-        boolean condition = false; // Initially assume that some properties have been set.
-        //String query = "SELECT appId, appType, patientId, appWithStaffId, date, startTime, finishTime FROM appointments;";
-        
-        Scanner in = new Scanner(System.in);
-        String msg = "Please enter details of any of the below properties (separated by commas)\n";
-        msg += "appId, appType, patientId, appWithStaffId, date, startTime, finishTime, room, summary\n";
-        System.out.println(msg);
-        String input = in.nextLine();
-        String[] line = input.split(",");
-        for (int i=0; i<line.length; i++)
-            line[i] = line[i].trim();
-        
-        if (! allUnset(line))
-            condition = true;
-        
-        if (condition) {
-            
-            ArrayList<String> allConditions = new ArrayList<String>();
-            
-            String[] columnNames = {"appId ", "appType ", "patientId ", "appWithStaffId ", "date ", "startTime ", "finishTime ", "room", "summary"};
-            for (int i=0; i<line.length; i++) {
-                if ( ! line[i].equals("") )
-                    allConditions.add(columnNames[i] + "LIKE '" + line[i] + "' ");
-            }
-            
-            for (int i=0; i<allConditions.size(); i++) {
-                if (i != allConditions.size()-1)
-                    allConditions.set(i, allConditions.get(i) + "AND ");
-            }
-            
-            query += "WHERE ";
-            for (String tmp : allConditions)
-                query += tmp;
-            
-        }
-        
-        query += "ORDER BY date, startTime, patientID ";
-        query += ";";
-        System.out.println(query);
-        connect.getRecordsNoGUI(query);
-    }
-    
-    public static void addAppointmentNoGUI() {
-        
-        DatabaseConnection connect = DatabaseConnection.getInstance();
-        
-        /*String query = "INSERT INTO appointments " + 
-                            "(appType, patientId, appWithStaffId, date, startTime, finishTime)" + 
-                            "VALUES ('Care Management', 5, 2, '02/02/2014', '00:10', '00:50') ;";*/
-        
-        Scanner in = new Scanner(System.in);
-        String msg = "Please enter details of the new appointment according to the properties below (separated by commas)\n";
-        msg += "appType, patientId, appWithStaffId, date, startTime, finishTime, room\n";
-        System.out.println(msg);
-        String input = in.nextLine();
-        
-        String update = "INSERT INTO appointments " + 
-                            "(appType, patientId, appWithStaffId, date, startTime, finishTime, room)" + 
-                            "VALUES (" + input + ") ;";
-        
-        //connect.addRecords(update);
-        connect.execute(update);
-    }
     
     public static void test() {
         

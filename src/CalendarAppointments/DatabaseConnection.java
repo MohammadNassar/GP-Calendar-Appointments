@@ -67,7 +67,7 @@ public class DatabaseConnection {
             while (result.next()) {
                 
                 list.add(new ArrayList<String>());
-                // Concatenate results retrieved from table and print them.
+                // Concatenate results retrieved from table and return/process them.
                 String appId = result.getString("appId");
                 String appType = result.getString("appType");
                 String patientId = result.getString("patientId");
@@ -118,7 +118,7 @@ public class DatabaseConnection {
             while (result.next()) {
                 
                 list.add(new ArrayList<String>());
-                // Concatenate results retrieved from table and print them.
+                // Concatenate results retrieved from table and return/process them.
                 String date = result.getString("date");
                 String type = result.getString("type");
                 String description = result.getString("description");
@@ -160,7 +160,7 @@ public class DatabaseConnection {
 
                 list.add(new ArrayList<String>());
                 boolean addMName;
-                // Concatenate results retrieved from table and print them.
+                // Concatenate results retrieved from table and return/process them.
                 String key = result.getString("NhsNumber");
                 String fname = result.getString("FirstName");
                 String mname = result.getString("MiddleName");
@@ -198,7 +198,7 @@ public class DatabaseConnection {
 
                 list.add(new ArrayList<String>());
                 boolean addMName;
-                // Concatenate results retrieved from table and print them.
+                // Concatenate results retrieved from table and return/process them.
                 String key = result.getString("PatientNumber");
                 String fname = result.getString("FirstName");
                 String mname = result.getString("MiddleName");
@@ -234,7 +234,7 @@ public class DatabaseConnection {
     public Object[][] exchangePermanentPatientIDsWithPatientNames(Object[][] array) {
         
         if (isEmpty(array))
-            return array; // As it without processing
+            return array; // As it is without processing
         
         int col = 2;
         for (int i=0; i<array.length; i++) {
@@ -269,7 +269,7 @@ public class DatabaseConnection {
     public Object[][] exchangeTempPatientIDsWithPatientNames(Object[][] array) {
         
         if (isEmpty(array))
-            return array; // As it without processing
+            return array; // As it is without processing
         
         int col = 2;
         for (int i=0; i<array.length; i++) {
@@ -304,7 +304,7 @@ public class DatabaseConnection {
     public Object[][] exchangeStaffIDsWithStaffNames(Object[][] array) {
         
         if (isEmpty(array))
-            return array; // As it without processing
+            return array; // As it is without processing
         
         int col = 3;
         for (int i=0; i<array.length; i++) {
@@ -352,7 +352,7 @@ public class DatabaseConnection {
             int index = 0;
             while (result.next()) {
                 
-                // Concatenate results retrieved from table and print them.
+                // Concatenate results retrieved from table and return/process them.
                 String day = result.getString(columnName);
                 
                 list.add(day);
@@ -386,7 +386,7 @@ public class DatabaseConnection {
             int index = 0;
             while (result.next()) {
                 
-                // Concatenate results retrieved from table and print them.
+                // Concatenate results retrieved from table and return/process them.
                 String day = result.getString("StaffID");
                 
                 list.add(day);
@@ -543,7 +543,7 @@ public class DatabaseConnection {
                 String room = result.getString("room");
                 String summary = result.getString("summary");
                 
-                // Concatenate results retrieved from table and print them.
+                // Concatenate results retrieved from table and return/process them.
                 String rowInTable = "App.No.: "+appId+"\t"+"App.Type is: "+appType+"\t";
                 if (appType.equalsIgnoreCase("Routine")) rowInTable += "\t";
                 rowInTable += "Patient: "+patientId+"\t"+"App.with: "+appWithStaffId+"\t";
@@ -596,7 +596,7 @@ public class DatabaseConnection {
             while (result.next()) {
                 
                 list.add(new ArrayList<String>());
-                // Concatenate results retrieved from table and print them.
+                // Concatenate results retrieved from table and return/process them.
                 for (int i=1; i<=36; i++) {
                     String val = result.getString(i);
                     list.get(index).add(val);
@@ -684,6 +684,13 @@ public class DatabaseConnection {
         
         if (array.length == 0)
             return true;
+        boolean allNull = true;
+        for (int i=0; i<array.length; i++) {
+            if (array[i] != null)
+                allNull = false;
+        }
+        if (allNull)
+            return true;
         return false;
     }
     
@@ -695,6 +702,15 @@ public class DatabaseConnection {
             if (array[0].length == 0)
                 return true;
         }
+        boolean allNull = true;
+        for (int i=0; i<array.length; i++) {
+            for (int j=0; j<array[i].length; j++) {
+                if (array[i][j] != null)
+                    allNull = false;
+            }
+        }
+        if (allNull)
+            return true;
         return false;
     }
     
