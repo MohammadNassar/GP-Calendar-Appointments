@@ -33,7 +33,8 @@ class name in the manifest Main-Class element.
 
 ###Author:
 
-Mohammad Nassar
+This program is fully designed by Mohammad Nassar, Student ID no. 120132108.
+Student at Queen Mary University of London, Computer Science with Industrial Experience Year 2. ('Software Engineering Project' module).
 
 ###License:
 
