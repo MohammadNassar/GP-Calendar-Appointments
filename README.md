@@ -38,5 +38,5 @@ Student at Queen Mary University of London, Computer Science with Industrial Exp
 
 ###License:
 
-* All coptrights are reserved to the program author/developer.
+* All coptrights are reserved to the program author/developer Mohammad Nassar (mentioned above).
 * Permission from author/developer is required before changing or reproducing this software.
